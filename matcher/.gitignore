@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+dump.rdb
+logs/
+*.log
+
+# Data directories (keep structure but ignore content)
+jd/*
+!jd/.gitkeep
+cv/*
+!cv/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# Docker
+*.pid

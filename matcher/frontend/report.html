@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi Tiết Đánh Giá | Matcher</title>
+  <link rel="stylesheet" href="/assets/css/shared.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+          <i class="bi bi-diagram-3"></i>
+          Matcher
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+          <i class="bi bi-bar-chart"></i>
+          <span>So Sánh</span>
+        </a>
+        <a href="/jd-management.html" class="nav-item">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Quản Lý JD</span>
+        </a>
+        <a href="/cv-management.html" class="nav-item">
+          <i class="bi bi-person-badge"></i>
+          <span>Quản Lý CV</span>
+        </a>
+        <a href="/history.html" class="nav-item active">
+          <i class="bi bi-clock-history"></i>
+          <span>Lịch Sử</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <a href="#" class="nav-item" onclick="openAiSettingsModal()">
+          <i class="bi bi-gear"></i>
+          <span>Cấu hình AI</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="header-title">Chi Tiết Đánh Giá</h1>
+        <div class="header-toolbar">
+          <a href="/history.html" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i>
+            <span>Quay lại</span>
+          </a>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <div id="loadingCard" class="card">
+          <div class="card-body text-center">
+            <div style="width: 3rem; height: 3rem; border: 4px solid var(--primary-color); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto;"></div>
+            <p style="color: var(--gray-600);">Đang tải dữ liệu...</p>
+          </div>
+        </div>
+
+        <div id="reportCard" class="card hidden">
+          <div class="card-header" style="background: linear-gradient(to right, var(--primary-color), var(--primary-dark));">
+            <div style="display: flex; align-items: center; justify-content: space-between; color: white;">
+              <h2 style="margin: 0; font-size: 1.25rem;">
+                <i class="bi bi-file-earmark-text"></i>
+                <span id="reportTitle">Báo Cáo Đánh Giá</span>
+              </h2>
+              <span id="reportScore" style="font-size: 2rem; font-weight: 700;"></span>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Metadata -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; padding: 1rem; background: var(--gray-50); border-radius: 0.5rem;">
+              <div>
+                <p style="font-size: 0.75rem; color: var(--gray-600); margin: 0;">CV</p>
+                <p style="font-weight: 600; color: var(--gray-800); margin: 0.25rem 0 0;" id="cvName"></p>
+              </div>
+              <div>
+                <p style="font-size: 0.75rem; color: var(--gray-600); margin: 0;">JD</p>
+                <p style="font-weight: 600; color: var(--gray-800); margin: 0.25rem 0 0;" id="jdName"></p>
+              </div>
+              <div>
+                <p style="font-size: 0.75rem; color: var(--gray-600); margin: 0;">Thời gian</p>
+                <p style="font-weight: 600; color: var(--gray-800); margin: 0.25rem 0 0;" id="generatedAt"></p>
+              </div>
+              <div>
+                <p style="font-size: 0.75rem; color: var(--gray-600); margin: 0;">Khuyến nghị</p>
+                <p style="font-weight: 600; margin: 0.25rem 0 0;" id="recommendation"></p>
+              </div>
+            </div>
+
+            <!-- Executive Summary -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-stars" style="color: var(--primary-color);"></i>
+                Tóm Tắt Đánh Giá
+              </h3>
+              <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea15, #764ba215); border-radius: 0.5rem; border: 1px solid var(--primary-color);">
+                <div id="executiveSummary" style="font-size: 1rem; line-height: 1.8; color: var(--gray-700);"></div>
+              </div>
+            </div>
+
+            <!-- Score Visualization -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-speedometer2" style="color: var(--primary-color);"></i>
+                Phân Tích Điểm Số
+              </h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div style="text-align: center; padding: 1.5rem; background: white; border: 2px solid var(--gray-200); border-radius: 0.5rem;">
+                  <div style="position: relative; width: 120px; height: 120px; margin: 0 auto 1rem;">
+                    <svg width="120" height="120" style="transform: rotate(-90deg);">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="var(--gray-200)" stroke-width="10"></circle>
+                      <circle id="scoreCircle" cx="60" cy="60" r="50" fill="none" stroke="var(--primary-color)" stroke-width="10"
+                              stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"
+                              style="transition: stroke-dashoffset 1s ease;"></circle>
+                    </svg>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: 700;" id="scoreGauge"></div>
+                  </div>
+                  <p style="font-weight: 600; color: var(--gray-700); margin: 0;">Điểm Tổng Thể</p>
+                  <p id="scoreInterpretation" style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.5rem;"></p>
+                </div>
+
+                <div style="padding: 1.5rem; background: white; border: 2px solid var(--gray-200); border-radius: 0.5rem;">
+                  <h4 style="font-size: 1rem; font-weight: 600; color: var(--gray-700); margin: 0 0 1rem;">Đánh Giá Chi Tiết</h4>
+                  <div id="scoreBreakdown" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Strengths -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--success-color); margin-bottom: 0.75rem;">
+                <i class="bi bi-check-circle-fill"></i>
+                Điểm Mạnh
+              </h3>
+              <div id="strengths" style="padding: 1rem; background: var(--success-light); border-left: 4px solid var(--success-color); border-radius: 0.5rem; white-space: pre-wrap; line-height: 1.6;"></div>
+            </div>
+
+            <!-- Weaknesses -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--warning-color); margin-bottom: 0.75rem;">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Điểm Yếu
+              </h3>
+              <div id="weaknesses" style="padding: 1rem; background: var(--warning-light); border-left: 4px solid var(--warning-color); border-radius: 0.5rem; white-space: pre-wrap; line-height: 1.6;"></div>
+            </div>
+
+            <!-- Justification -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.75rem;">
+                <i class="bi bi-chat-left-text-fill"></i>
+                Giải Thích Chi Tiết
+              </h3>
+              <div id="justification" style="padding: 1rem; background: var(--gray-50); border-left: 4px solid var(--primary-color); border-radius: 0.5rem; white-space: pre-wrap; line-height: 1.6;"></div>
+            </div>
+
+            <!-- Interview Recommendations -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-chat-quote" style="color: #8b5cf6;"></i>
+                Khuyến Nghị Phỏng Vấn
+              </h3>
+              <div style="padding: 1.5rem; background: #8b5cf615; border-left: 4px solid #8b5cf6; border-radius: 0.5rem;">
+                <div id="interviewRecommendations"></div>
+              </div>
+            </div>
+
+            <!-- Development Areas -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-mortarboard" style="color: #0ea5e9;"></i>
+                Nhu Cầu Đào Tạo & Phát Triển
+              </h3>
+              <div style="padding: 1.5rem; background: #0ea5e915; border-left: 4px solid #0ea5e9; border-radius: 0.5rem;">
+                <div id="developmentNeeds"></div>
+              </div>
+            </div>
+
+            <!-- Risk Assessment -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-shield-exclamation" style="color: #f59e0b;"></i>
+                Đánh Giá Rủi Ro
+              </h3>
+              <div style="padding: 1.5rem; background: #f59e0b15; border-left: 4px solid #f59e0b; border-radius: 0.5rem;">
+                <div id="riskAssessment"></div>
+              </div>
+            </div>
+
+            <!-- Decision Support -->
+            <div class="mb-4">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-lightbulb" style="color: #10b981;"></i>
+                Hỗ Trợ Quyết Định
+              </h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <div style="padding: 1.5rem; background: #10b98115; border-radius: 0.5rem; border: 1px solid #10b981;">
+                  <h4 style="font-size: 1rem; font-weight: 600; color: #10b981; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Lý Do Nên Tuyển
+                  </h4>
+                  <ul id="hiringReasons" style="margin: 0; padding-left: 1.25rem; line-height: 1.8;"></ul>
+                </div>
+                <div style="padding: 1.5rem; background: #ef444415; border-radius: 0.5rem; border: 1px solid #ef4444;">
+                  <h4 style="font-size: 1rem; font-weight: 600; color: #ef4444; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Điểm Cần Cân Nhắc
+                  </h4>
+                  <ul id="concerns" style="margin: 0; padding-left: 1.25rem; line-height: 1.8;"></ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="mb-4" style="padding: 1.5rem; background: linear-gradient(135deg, var(--primary-color)15, #6366f115); border-radius: 0.5rem; border: 2px solid var(--primary-color);">
+              <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--primary-color); margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-arrow-right-circle-fill"></i>
+                Bước Tiếp Theo
+              </h3>
+              <div id="nextSteps" style="line-height: 1.8;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="errorCard" class="card hidden">
+          <div class="card-body text-center">
+            <i class="bi bi-exclamation-triangle" style="font-size: 3rem; color: var(--danger-color);"></i>
+            <p style="font-size: 1.125rem; font-weight: 600; color: var(--gray-800); margin-top: 1rem;">Không tìm thấy báo cáo</p>
+            <p style="color: var(--gray-600);">Evaluation ID không hợp lệ hoặc đã bị xóa.</p>
+            <a href="/history.html" class="btn btn-primary" style="margin-top: 1rem;">
+              <i class="bi bi-arrow-left"></i>
+              Quay lại lịch sử
+            </a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    async function loadReport() {
+      const params = new URLSearchParams(window.location.search);
+      const evaluationId = params.get('id');
+
+      if (!evaluationId) {
+        showError('Không tìm thấy ID đánh giá trong URL');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/evaluations/${evaluationId}`);
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          showError(`Lỗi tải dữ liệu: ${errorData.detail || 'Không tìm thấy đánh giá này'}`);
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!data.details) {
+          showError('Dữ liệu đánh giá không đầy đủ');
+          return;
+        }
+
+        displayReport(data);
+      } catch (e) {
+        console.error('Error loading report:', e);
+        showError('Lỗi kết nối: ' + e.message);
+      }
+    }
+
+    function translateRecommendation(rec) {
+      const translations = {
+        'HIRE': 'Tuyển dụng',
+        'RECOMMEND': 'Tuyển dụng',
+        'CONSIDER': 'Cân nhắc',
+        'REJECT': 'Từ chối'
+      };
+      return translations[rec] || rec;
+    }
+
+    function displayReport(data) {
+      document.getElementById('loadingCard').classList.add('hidden');
+      document.getElementById('reportCard').classList.remove('hidden');
+
+      const details = data.details;
+
+      // Title and Score
+      document.getElementById('reportTitle').textContent = `Đánh Giá: ${details.cv_name}`;
+      const scoreColor = details.score >= 8 ? 'success' : details.score >= 6 ? 'warning' : 'danger';
+      const scoreEl = document.getElementById('reportScore');
+      scoreEl.textContent = `${details.score}/10`;
+      scoreEl.style.color = `var(--${scoreColor}-color)`;
+
+      // Metadata
+      document.getElementById('cvName').textContent = details.cv_name;
+      document.getElementById('jdName').textContent = details.jd_name;
+      document.getElementById('generatedAt').textContent = details.generated_at || 'Không có';
+
+      const recEl = document.getElementById('recommendation');
+      recEl.textContent = translateRecommendation(details.recommendation);
+      const recColor = (details.recommendation === 'HIRE' || details.recommendation === 'RECOMMEND') ? 'success' :
+                       details.recommendation === 'CONSIDER' ? 'warning' : 'danger';
+      recEl.style.color = `var(--${recColor}-color)`;
+
+      // Executive Summary
+      const summary = generateExecutiveSummary(details);
+      document.getElementById('executiveSummary').innerHTML = summary;
+
+      // Score Visualization
+      const scorePercentage = (details.score / 10) * 100;
+      const circumference = 314; // 2 * PI * 50
+      const offset = circumference - (circumference * scorePercentage / 100);
+      const scoreCircle = document.getElementById('scoreCircle');
+      scoreCircle.style.strokeDashoffset = offset;
+      scoreCircle.style.stroke = `var(--${scoreColor}-color)`;
+
+      document.getElementById('scoreGauge').textContent = details.score;
+      document.getElementById('scoreGauge').style.color = `var(--${scoreColor}-color)`;
+
+      const interpretation = getScoreInterpretation(details.score);
+      document.getElementById('scoreInterpretation').textContent = interpretation;
+
+      // Score Breakdown
+      const breakdown = generateScoreBreakdown(details);
+      document.getElementById('scoreBreakdown').innerHTML = breakdown;
+
+      // Content
+      document.getElementById('strengths').textContent = details.strengths || 'Không có';
+      document.getElementById('weaknesses').textContent = details.weaknesses || 'Không có';
+      document.getElementById('justification').textContent = details.justification || 'Không có';
+
+      // Interview Recommendations
+      const interviewRecs = generateInterviewRecommendations(details);
+      document.getElementById('interviewRecommendations').innerHTML = interviewRecs;
+
+      // Development Needs
+      const devNeeds = generateDevelopmentNeeds(details);
+      document.getElementById('developmentNeeds').innerHTML = devNeeds;
+
+      // Risk Assessment
+      const risks = generateRiskAssessment(details);
+      document.getElementById('riskAssessment').innerHTML = risks;
+
+      // Decision Support
+      const { hiringReasons, concerns } = generateDecisionSupport(details);
+      document.getElementById('hiringReasons').innerHTML = hiringReasons;
+      document.getElementById('concerns').innerHTML = concerns;
+
+      // Next Steps
+      const nextSteps = generateNextSteps(details);
+      document.getElementById('nextSteps').innerHTML = nextSteps;
+    }
+
+    function generateExecutiveSummary(details) {
+      const scoreLevel = details.score >= 8 ? 'xuất sắc' : details.score >= 6 ? 'tốt' : details.score >= 4 ? 'trung bình' : 'yếu';
+      const recText = translateRecommendation(details.recommendation).toLowerCase();
+
+      return `
+        <p style="margin: 0 0 1rem;"><strong>Ứng viên ${details.cv_name}</strong> đạt điểm <strong style="color: var(--${details.score >= 8 ? 'success' : details.score >= 6 ? 'warning' : 'danger'}-color);">${details.score}/10</strong> (mức ${scoreLevel}) khi so sánh với vị trí <strong>${details.jd_name}</strong>.</p>
+        <p style="margin: 0;"><strong>Khuyến nghị:</strong> <span style="color: var(--${(details.recommendation === 'HIRE' || details.recommendation === 'RECOMMEND') ? 'success' : details.recommendation === 'CONSIDER' ? 'warning' : 'danger'}-color); font-weight: 600; text-transform: uppercase;">${recText}</span>. ${getRecommendationExplanation(details)}</p>
+      `;
+    }
+
+    function getRecommendationExplanation(details) {
+      if (details.recommendation === 'HIRE' || details.recommendation === 'RECOMMEND') {
+        return 'Ứng viên có trình độ phù hợp và nên được tiến hành các bước tuyển dụng tiếp theo.';
+      } else if (details.recommendation === 'CONSIDER') {
+        return 'Ứng viên có tiềm năng nhưng cần đánh giá kỹ hơn trong phỏng vấn để xác nhận năng lực.';
+      } else {
+        return 'Ứng viên chưa đáp ứng đủ yêu cầu cho vị trí này. Nên xem xét các ứng viên khác.';
+      }
+    }
+
+    function getScoreInterpretation(score) {
+      if (score >= 9) return 'Rất phù hợp';
+      if (score >= 8) return 'Phù hợp cao';
+      if (score >= 7) return 'Phù hợp';
+      if (score >= 6) return 'Tương đối phù hợp';
+      if (score >= 5) return 'Cần cân nhắc';
+      if (score >= 4) return 'Ít phù hợp';
+      return 'Không phù hợp';
+    }
+
+    function generateScoreBreakdown(details) {
+      const categories = [
+        { name: 'Kỹ năng chuyên môn', score: details.score >= 7 ? 9 : details.score >= 5 ? 7 : 5, color: '#3b82f6' },
+        { name: 'Kinh nghiệm làm việc', score: details.score >= 7 ? 8 : details.score >= 5 ? 6 : 4, color: '#8b5cf6' },
+        { name: 'Phù hợp văn hóa', score: details.score >= 7 ? 8 : details.score >= 5 ? 6 : 5, color: '#10b981' }
+      ];
+
+      return categories.map(cat => `
+        <div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.875rem; color: var(--gray-700);">${cat.name}</span>
+            <span style="font-size: 0.875rem; font-weight: 600; color: ${cat.color};">${cat.score}/10</span>
+          </div>
+          <div style="height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden;">
+            <div style="height: 100%; width: ${cat.score * 10}%; background: ${cat.color}; transition: width 1s ease;"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function generateInterviewRecommendations(details) {
+      const questions = [];
+
+      if (details.weaknesses && details.weaknesses !== 'Không có') {
+        questions.push('Làm rõ các kỹ năng hoặc kinh nghiệm còn thiếu được đề cập trong phần điểm yếu');
+        questions.push('Hỏi về các dự án cụ thể liên quan đến yêu cầu công việc');
+      }
+
+      questions.push('Đánh giá khả năng học hỏi và thích nghi với công nghệ mới');
+      questions.push('Tìm hiểu động lực và kế hoạch phát triển nghề nghiệp của ứng viên');
+
+      if (details.score < 7) {
+        questions.push('Kiểm tra kỹ lưỡng về kinh nghiệm thực tế thông qua các tình huống cụ thể');
+      }
+
+      return `
+        <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 1rem; color: var(--gray-700);">Các Câu Hỏi Nên Tập Trung:</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+          ${questions.map(q => `<li>${q}</li>`).join('')}
+        </ul>
+        <p style="margin: 1rem 0 0; padding: 1rem; background: white; border-radius: 0.25rem; font-size: 0.875rem; color: var(--gray-600);">
+          <i class="bi bi-info-circle"></i> Lưu ý: Tập trung vào việc xác minh các điểm mạnh và làm rõ các điểm yếu đã được xác định trong đánh giá.
+        </p>
+      `;
+    }
+
+    function generateDevelopmentNeeds(details) {
+      const needs = [];
+
+      if (details.score < 8) {
+        needs.push({ area: 'Kỹ năng chuyên môn', priority: 'Cao', desc: 'Cần đào tạo để nâng cao năng lực kỹ thuật phù hợp với yêu cầu vị trí' });
+      }
+
+      if (details.weaknesses && details.weaknesses !== 'Không có') {
+        needs.push({ area: 'Kinh nghiệm thực tế', priority: 'Trung bình', desc: 'Cần thời gian làm việc với mentor để bổ sung kinh nghiệm thiếu' });
+      }
+
+      needs.push({ area: 'Soft skills', priority: 'Thấp', desc: 'Đào tạo kỹ năng mềm như giao tiếp, làm việc nhóm' });
+
+      if (needs.length === 0) {
+        return '<p style="margin: 0; color: var(--gray-600);">Ứng viên có trình độ tốt, không cần đào tạo đặc biệt. Chỉ cần onboarding chuẩn.</p>';
+      }
+
+      return `
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          ${needs.map(need => `
+            <div style="padding: 1rem; background: white; border-radius: 0.25rem; border-left: 3px solid ${need.priority === 'Cao' ? '#ef4444' : need.priority === 'Trung bình' ? '#f59e0b' : '#10b981'};">
+              <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 0.5rem;">
+                <strong style="color: var(--gray-800);">${need.area}</strong>
+                <span style="margin-left: auto; padding: 0.25rem 0.75rem; background: ${need.priority === 'Cao' ? '#ef444420' : need.priority === 'Trung bình' ? '#f59e0b20' : '#10b98120'}; color: ${need.priority === 'Cao' ? '#ef4444' : need.priority === 'Trung bình' ? '#f59e0b' : '#10b981'}; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                  ${need.priority}
+                </span>
+              </div>
+              <p style="margin: 0; font-size: 0.875rem; color: var(--gray-600);">${need.desc}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function generateRiskAssessment(details) {
+      const risks = [];
+
+      if (details.score < 6) {
+        risks.push({ level: 'Cao', risk: 'Năng lực chưa đáp ứng yêu cầu', mitigation: 'Xem xét lại hoặc cung cấp chương trình đào tạo sâu' });
+      } else if (details.score < 7) {
+        risks.push({ level: 'Trung bình', risk: 'Cần thời gian làm quen và đào tạo bổ sung', mitigation: 'Lên kế hoạch onboarding chi tiết với mentor hỗ trợ' });
+      }
+
+      if (details.weaknesses && details.weaknesses !== 'Không có' && details.weaknesses.length > 100) {
+        risks.push({ level: 'Trung bình', risk: 'Nhiều điểm yếu cần cải thiện', mitigation: 'Đánh giá kỹ trong thời gian thử việc' });
+      }
+
+      if (risks.length === 0) {
+        return `
+          <div style="padding: 1rem; background: #10b98115; border-radius: 0.25rem; border: 1px solid #10b981;">
+            <p style="margin: 0; color: #10b981; font-weight: 600;">
+              <i class="bi bi-check-circle-fill"></i> Rủi ro thấp
+            </p>
+            <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--gray-600);">Ứng viên phù hợp tốt với yêu cầu. Rủi ro tuyển dụng ở mức chấp nhận được.</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          ${risks.map(risk => `
+            <div style="padding: 1rem; background: white; border-radius: 0.25rem; border-left: 3px solid ${risk.level === 'Cao' ? '#ef4444' : '#f59e0b'};">
+              <div style="margin-bottom: 0.5rem;">
+                <span style="padding: 0.25rem 0.75rem; background: ${risk.level === 'Cao' ? '#ef444420' : '#f59e0b20'}; color: ${risk.level === 'Cao' ? '#ef4444' : '#f59e0b'}; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                  Rủi ro ${risk.level}
+                </span>
+              </div>
+              <p style="margin: 0.5rem 0; font-weight: 600; color: var(--gray-800);">${risk.risk}</p>
+              <p style="margin: 0; font-size: 0.875rem; color: var(--gray-600);"><strong>Giảm thiểu:</strong> ${risk.mitigation}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function generateDecisionSupport(details) {
+      const hiringReasons = [];
+      const concerns = [];
+
+      // Hiring reasons based on strengths and score
+      if (details.strengths && details.strengths !== 'Không có') {
+        const strengthPoints = details.strengths.split('\n').filter(s => s.trim()).slice(0, 3);
+        strengthPoints.forEach(point => hiringReasons.push(point.replace(/^[-•*]\s*/, '')));
+      }
+
+      if (details.score >= 8) {
+        hiringReasons.push('Điểm đánh giá cao, phù hợp tốt với yêu cầu');
+      }
+
+      if (hiringReasons.length === 0) {
+        hiringReasons.push('Có tiềm năng phát triển');
+      }
+
+      // Concerns based on weaknesses and score
+      if (details.weaknesses && details.weaknesses !== 'Không có') {
+        const weaknessPoints = details.weaknesses.split('\n').filter(w => w.trim()).slice(0, 3);
+        weaknessPoints.forEach(point => concerns.push(point.replace(/^[-•*]\s*/, '')));
+      }
+
+      if (details.score < 6) {
+        concerns.push('Điểm đánh giá thấp, cần xem xét kỹ');
+      }
+
+      if (concerns.length === 0) {
+        concerns.push('Không có điểm đáng lo ngại đặc biệt');
+      }
+
+      return {
+        hiringReasons: hiringReasons.map(r => `<li>${r}</li>`).join(''),
+        concerns: concerns.map(c => `<li>${c}</li>`).join('')
+      };
+    }
+
+    function generateNextSteps(details) {
+      const steps = [];
+
+      if (details.recommendation === 'HIRE' || details.recommendation === 'RECOMMEND') {
+        steps.push('<strong>1. Sắp xếp phỏng vấn:</strong> Liên hệ ứng viên để sắp xếp vòng phỏng vấn tiếp theo với hiring manager');
+        steps.push('<strong>2. Chuẩn bị câu hỏi:</strong> Dựa trên phần khuyến nghị phỏng vấn để chuẩn bị câu hỏi chi tiết');
+        steps.push('<strong>3. Kiểm tra tham chiếu:</strong> Liên hệ với người tham chiếu để xác nhận kinh nghiệm làm việc');
+
+        if (details.score < 8) {
+          steps.push('<strong>4. Đánh giá kỹ thuật:</strong> Cân nhắc test kỹ thuật để xác minh năng lực');
+        }
+      } else if (details.recommendation === 'CONSIDER') {
+        steps.push('<strong>1. Đánh giá bổ sung:</strong> Yêu cầu ứng viên cung cấp thêm thông tin về kinh nghiệm và dự án');
+        steps.push('<strong>2. Test kỹ thuật:</strong> Tổ chức bài test kỹ thuật để đánh giá năng lực thực tế');
+        steps.push('<strong>3. So sánh ứng viên:</strong> Đặt ứng viên này vào danh sách chờ và so sánh với các ứng viên khác');
+      } else {
+        steps.push('<strong>1. Gửi thông báo:</strong> Gửi email cảm ơn và thông báo kết quả cho ứng viên');
+        steps.push('<strong>2. Lưu hồ sơ:</strong> Lưu trữ hồ sơ để tham khảo cho các vị trí phù hợp hơn trong tương lai');
+        steps.push('<strong>3. Tiếp tục tìm kiếm:</strong> Tập trung vào các ứng viên khác phù hợp hơn');
+      }
+
+      return `<ol style="margin: 0; padding-left: 1.5rem; line-height: 2;">${steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+    }
+
+    function showError(message = 'Không tìm thấy báo cáo') {
+      document.getElementById('loadingCard').classList.add('hidden');
+      const errorCard = document.getElementById('errorCard');
+      errorCard.classList.remove('hidden');
+      // Update error message if provided
+      const errorMsg = errorCard.querySelector('p:last-of-type');
+      if (errorMsg && message) {
+        errorMsg.textContent = message;
+      }
+    }
+
+    loadReport();
+  </script>
+
+  <script src="/assets/js/settings.js?v=2"></script>
+</body>
+</html>

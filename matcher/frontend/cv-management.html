@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý CV | Matcher</title>
+  <link rel="stylesheet" href="/assets/css/shared.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .stats-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--gray-100);
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      color: var(--gray-700);
+    }
+
+    /* EJ2 Grid-style Pagination */
+    .e-gridpager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    .e-pagerinfo {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagercontainer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .e-pagernav {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .e-pagerbutton {
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .e-pagerbutton:hover:not(:disabled) {
+      background: var(--gray-50);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .e-pagerbutton.e-currentitem {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .e-pagerbutton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .e-pagesize {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagesize select {
+      padding: 0.375rem 0.5rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Status badges */
+    .status-evaluated {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .status-not-evaluated {
+      background: var(--gray-200);
+      color: var(--gray-700);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* Score display */
+    .score-display {
+      font-size: 1.125rem;
+      font-weight: 700;
+    }
+
+    .score-high { color: var(--success-color); }
+    .score-medium { color: var(--warning-color); }
+    .score-low { color: var(--danger-color); }
+
+    /* Table improvements */
+    .table-container {
+      overflow-x: auto;
+      position: relative;
+    }
+
+    table {
+      min-width: 900px;
+    }
+
+    table th {
+      white-space: nowrap;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Frozen action column */
+    table th:last-child,
+    table td:last-child {
+      position: sticky;
+      right: 0;
+      background: white;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+      z-index: 5;
+    }
+
+    table th:last-child {
+      z-index: 15;
+    }
+
+    .jd-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 300px;
+    }
+
+    .jd-item {
+      font-size: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.375rem 0.5rem;
+      background: var(--gray-50);
+      border-radius: 0.25rem;
+      border-left: 2px solid var(--primary-color);
+    }
+
+    .jd-item-name {
+      color: var(--gray-700);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .jd-item-score {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+          <i class="bi bi-diagram-3"></i>
+          Matcher
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+          <i class="bi bi-bar-chart"></i>
+          <span>So Sánh</span>
+        </a>
+        <a href="/jd-management.html" class="nav-item">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Quản Lý JD</span>
+        </a>
+        <a href="/cv-management.html" class="nav-item active">
+          <i class="bi bi-person-badge"></i>
+          <span>Quản Lý CV</span>
+        </a>
+        <a href="/history.html" class="nav-item">
+          <i class="bi bi-clock-history"></i>
+          <span>Lịch Sử</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <a href="#" class="nav-item" onclick="openAiSettingsModal()">
+          <i class="bi bi-gear"></i>
+          <span>Cấu hình AI</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="header-title">Quản Lý CVs</h1>
+        <div class="header-toolbar">
+          <button class="btn btn-success" onclick="openUploadModal()">
+            <i class="bi bi-cloud-upload"></i>
+            Tải lên CV
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <!-- Search & Filter -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <div style="flex: 1;">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm CV..." class="form-control">
+              </div>
+              <select id="statusFilter" class="form-control" style="width: auto;">
+                <option value="">Tất cả trạng thái</option>
+                <option value="evaluated">Hoàn thành</option>
+                <option value="not_evaluated">-</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Tên CV</th>
+                  <th style="width: 15%;">Danh Mục</th>
+                  <th style="width: 15%;">Phòng Ban</th>
+                  <th style="width: 15%;">Trạng Thái</th>
+                  <th style="width: 22%;">JDs Đã Đánh Giá</th>
+                  <th class="text-right" style="width: 8%;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="pagination" class="e-gridpager"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-cloud-upload"></i>
+          Tải lên CVs
+        </h3>
+        <button class="modal-close" onclick="closeUploadModal()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="dropZone" style="border: 2px dashed var(--gray-300); border-radius: 0.5rem; padding: 3rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s;">
+          <input type="file" id="fileInput" accept=".pdf,.docx" multiple style="display: none;">
+          <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: var(--gray-400); display: block; margin-bottom: 1rem;"></i>
+          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Kéo thả CVs vào đây</p>
+          <p style="font-size: 0.875rem; color: var(--gray-500);">hoặc click để chọn files (.pdf, .docx)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Evaluation History Modal -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-clock-history"></i>
+          Lịch Sử Đánh Giá: <span id="modalCVName"></span>
+        </h3>
+        <button class="modal-close" onclick="closeHistoryModal()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Stats -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="card">
+            <div class="card-body text-center">
+              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Tổng Đánh Giá</p>
+              <p id="modalTotal" style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin: 0;">-</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body text-center">
+              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Điểm Cao Nhất</p>
+              <p id="modalBest" style="font-size: 1.5rem; font-weight: 700; color: var(--success-color); margin: 0;">-</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body text-center">
+              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Điểm Trung Bình</p>
+              <p id="modalAvg" style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color); margin: 0;">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- History List -->
+        <div id="historyList">
+          <p class="text-center" style="color: var(--gray-400); padding: 2rem;">Đang tải...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed CV Analysis Modal -->
+  <div id="analysisModal" class="modal">
+    <div class="modal-content" style="max-width: 1200px; max-height: 90vh;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), #6366f1); color: white;">
+        <h3 class="modal-title" style="color: white;">
+          <i class="bi bi-graph-up-arrow"></i>
+          Phân Tích Chi Tiết CV: <span id="analysisCVName"></span>
+        </h3>
+        <button class="modal-close" onclick="closeAnalysisModal()" style="color: white;">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 2rem;">
+        <!-- Loading State -->
+        <div id="analysisLoading" class="text-center">
+          <div style="width: 3rem; height: 3rem; border: 4px solid var(--primary-color); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto;"></div>
+          <p style="color: var(--gray-600);">Đang phân tích dữ liệu...</p>
+        </div>
+
+        <!-- Analysis Content -->
+        <div id="analysisContent" class="hidden">
+          <!-- Overall Stats -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card" style="background: linear-gradient(135deg, #10b981, #059669);">
+              <div class="card-body text-center" style="color: white;">
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Điểm Cao Nhất</p>
+                <p id="analysisBestScore" style="font-size: 2.5rem; font-weight: 700; margin: 0;">-</p>
+                <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Trên tổng số 10</p>
+              </div>
+            </div>
+            <div class="card" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <div class="card-body text-center" style="color: white;">
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Điểm Trung Bình</p>
+                <p id="analysisAvgScore" style="font-size: 2.5rem; font-weight: 700; margin: 0;">-</p>
+                <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Qua <span id="analysisTotalEvals">0</span> đánh giá</p>
+              </div>
+            </div>
+            <div class="card" style="background: linear-gradient(135deg, #4f46e5, #4338ca);">
+              <div class="card-body text-center" style="color: white;">
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Khả Năng Tuyển Dụng</p>
+                <p id="analysisHireRate" style="font-size: 2.5rem; font-weight: 700; margin: 0;">-</p>
+                <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Tỷ lệ đánh giá cao</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Strengths & Weaknesses -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="card">
+              <div class="card-header" style="background: #d1fae5; border-bottom: 2px solid var(--success-color);">
+                <h4 style="margin: 0; color: var(--success-color); font-size: 1rem; font-weight: 600;">
+                  <i class="bi bi-check-circle-fill"></i>
+                  Điểm Mạnh Nổi Bật
+                </h4>
+              </div>
+              <div class="card-body">
+                <div id="analysisStrengths" style="line-height: 1.8;"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header" style="background: #fef3c7; border-bottom: 2px solid var(--warning-color);">
+                <h4 style="margin: 0; color: var(--warning-color); font-size: 1rem; font-weight: 600;">
+                  <i class="bi bi-exclamation-triangle-fill"></i>
+                  Điểm Cần Cải Thiện
+                </h4>
+              </div>
+              <div class="card-body">
+                <div id="analysisWeaknesses" style="line-height: 1.8;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Analysis -->
+          <div class="card mb-4" style="border-left: 4px solid var(--primary-color);">
+            <div class="card-header" style="background: var(--gray-50);">
+              <h4 style="margin: 0; color: var(--primary-color); font-size: 1.125rem; font-weight: 600;">
+                <i class="bi bi-graph-up"></i>
+                Phân Tích Thị Trường
+              </h4>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; gap: 1.5rem;">
+                <div>
+                  <h5 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">
+                    <i class="bi bi-star-fill" style="color: var(--warning-color);"></i>
+                    Điểm Nổi Bật So Với Thị Trường
+                  </h5>
+                  <div id="analysisMarketHighlights" style="padding: 1rem; background: var(--gray-50); border-radius: 0.5rem; line-height: 1.8;"></div>
+                </div>
+                <div>
+                  <h5 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">
+                    <i class="bi bi-briefcase-fill" style="color: var(--primary-color);"></i>
+                    Các Vị Trí Phù Hợp
+                  </h5>
+                  <div id="analysisSuitableJobs" style="padding: 1rem; background: var(--gray-50); border-radius: 0.5rem;"></div>
+                </div>
+                <div>
+                  <h5 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">
+                    <i class="bi bi-cash-stack" style="color: var(--success-color);"></i>
+                    Mức Lương Ước Tính (Thị Trường Việt Nam)
+                  </h5>
+                  <div id="analysisSalaryRange" style="padding: 1rem; background: var(--gray-50); border-radius: 0.5rem;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluation History -->
+          <div class="card">
+            <div class="card-header" style="background: var(--gray-50);">
+              <h4 style="margin: 0; color: var(--gray-700); font-size: 1.125rem; font-weight: 600;">
+                <i class="bi bi-clock-history"></i>
+                Lịch Sử Đánh Giá Chi Tiết
+              </h4>
+            </div>
+            <div class="card-body">
+              <div id="analysisEvaluationList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Contact Info Modal -->
+  <div id="contactModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-pencil-square"></i>
+          Cập Nhật Thông Tin Liên Hệ
+        </h3>
+        <button class="modal-close" onclick="closeContactModal()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="contactCVName">
+        <div class="mb-3">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
+            <i class="bi bi-envelope"></i> Email
+          </label>
+          <input type="email" id="contactEmail" class="form-control" placeholder="example@email.com">
+        </div>
+        <div class="mb-3">
+          <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">
+            <i class="bi bi-telephone"></i> Số Điện Thoại
+          </label>
+          <input type="tel" id="contactPhone" class="form-control" placeholder="0123456789">
+        </div>
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <button class="btn btn-outline" onclick="closeContactModal()">Hủy</button>
+          <button class="btn btn-primary" onclick="saveContactInfo()">
+            <i class="bi bi-check"></i> Lưu
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .mb-3 { margin-bottom: 1rem; }
+  </style>
+
+  <script>
+    let currentPage = 1;
+    let currentLimit = 10;
+    let currentSearch = '';
+    let currentStatus = '';
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('active');
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.remove('active');
+    }
+
+    function closeAnalysisModal() {
+      document.getElementById('analysisModal').classList.remove('active');
+    }
+
+    function openContactModal(cvName, email, phone) {
+      document.getElementById('contactModal').classList.add('active');
+      document.getElementById('contactCVName').value = cvName;
+      document.getElementById('contactEmail').value = email || '';
+      document.getElementById('contactPhone').value = phone || '';
+    }
+
+    function closeContactModal() {
+      document.getElementById('contactModal').classList.remove('active');
+    }
+
+    async function saveContactInfo() {
+      const cvName = document.getElementById('contactCVName').value;
+      const email = document.getElementById('contactEmail').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+
+      try {
+        await updateCVMetadata(cvName, 'email', email);
+        await updateCVMetadata(cvName, 'phone', phone);
+        closeContactModal();
+        loadCVs();
+      } catch (e) {
+        alert('Lỗi cập nhật: ' + e.message);
+      }
+    }
+
+    function translateRecommendation(rec) {
+      const translations = {
+        'HIRE': 'Tuyển dụng',
+        'RECOMMEND': 'Tuyển dụng',
+        'CONSIDER': 'Cân nhắc',
+        'REJECT': 'Từ chối'
+      };
+      return translations[rec] || rec;
+    }
+
+    async function showDetailedAnalysis(cvName) {
+      document.getElementById('analysisModal').classList.add('active');
+      document.getElementById('analysisCVName').textContent = cvName;
+      document.getElementById('analysisLoading').classList.remove('hidden');
+      document.getElementById('analysisContent').classList.add('hidden');
+
+      try {
+        // Fetch evaluation data
+        const res = await fetch(`/cvs/${encodeURIComponent(cvName)}/evaluations`);
+        const data = await res.json();
+
+        if (data.total === 0) {
+          document.getElementById('analysisLoading').innerHTML = '<p class="text-center" style="color: var(--gray-600); padding: 2rem;">Chưa có dữ liệu đánh giá cho CV này.</p>';
+          return;
+        }
+
+        // Fetch detailed evaluation data for strengths/weaknesses
+        const evaluationDetails = await Promise.all(
+          data.evaluations.map(e => fetch(`/evaluations/${e.id}`).then(r => r.json()).catch(() => null))
+        );
+
+        // Calculate stats
+        const scores = data.evaluations.map(e => e.score).filter(s => s !== null);
+
+        // Calculate hire probability based on high scores (>= 8) and HIRE recommendations
+        const highScoreCount = scores.filter(s => s >= 8).length;
+        const hireRecommendations = evaluationDetails.filter(e => e && e.details && e.details.recommendation === 'HIRE').length;
+
+        // Use the higher of the two metrics for a more accurate prediction
+        const hireableCount = Math.max(highScoreCount, hireRecommendations);
+        const hireRate = data.total > 0 ? Math.round((hireableCount / data.total) * 100) : 0;
+
+        // Update stats
+        document.getElementById('analysisBestScore').textContent = data.best_score || '-';
+        document.getElementById('analysisAvgScore').textContent = data.average_score || '-';
+        document.getElementById('analysisTotalEvals').textContent = data.total;
+        document.getElementById('analysisHireRate').textContent = hireRate + '%';
+
+        // Aggregate strengths and weaknesses
+        const allStrengths = new Set();
+        const allWeaknesses = new Set();
+
+        evaluationDetails.forEach(e => {
+          if (e && e.details) {
+            if (e.details.strengths) {
+              e.details.strengths.split('\n').filter(s => s.trim()).forEach(s => allStrengths.add(s.trim()));
+            }
+            if (e.details.weaknesses) {
+              e.details.weaknesses.split('\n').filter(s => s.trim()).forEach(s => allWeaknesses.add(s.trim()));
+            }
+          }
+        });
+
+        // Display strengths
+        if (allStrengths.size > 0) {
+          document.getElementById('analysisStrengths').innerHTML = '<ul style="margin: 0; padding-left: 1.5rem;">' +
+            Array.from(allStrengths).map(s => `<li style="margin-bottom: 0.5rem;">${s}</li>`).join('') +
+            '</ul>';
+        } else {
+          document.getElementById('analysisStrengths').innerHTML = '<p style="color: var(--gray-500);">Chưa có dữ liệu</p>';
+        }
+
+        // Display weaknesses
+        if (allWeaknesses.size > 0) {
+          document.getElementById('analysisWeaknesses').innerHTML = '<ul style="margin: 0; padding-left: 1.5rem;">' +
+            Array.from(allWeaknesses).map(s => `<li style="margin-bottom: 0.5rem;">${s}</li>`).join('') +
+            '</ul>';
+        } else {
+          document.getElementById('analysisWeaknesses').innerHTML = '<p style="color: var(--gray-500);">Chưa có dữ liệu</p>';
+        }
+
+        // Market analysis (placeholder - will be enhanced with backend support)
+        analyzeMarketPosition(data, evaluationDetails);
+
+        // Display evaluation list
+        displayEvaluationList(data.evaluations, evaluationDetails);
+
+        // Show content
+        document.getElementById('analysisLoading').classList.add('hidden');
+        document.getElementById('analysisContent').classList.remove('hidden');
+
+      } catch (error) {
+        console.error('Error loading analysis:', error);
+        document.getElementById('analysisLoading').innerHTML = '<p class="text-center" style="color: var(--danger-color); padding: 2rem;">Lỗi khi tải dữ liệu phân tích.</p>';
+      }
+    }
+
+    function analyzeMarketPosition(data, evaluationDetails) {
+      const avgScore = data.average_score || 0;
+
+      // Market highlights based on score
+      let highlights = '';
+      if (avgScore >= 8) {
+        highlights = `
+          <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+            <li>Ứng viên có điểm đánh giá xuất sắc (${avgScore}/10)</li>
+            <li>Thuộc top 20% ứng viên trên thị trường</li>
+            <li>Có khả năng cạnh tranh cao với các ứng viên senior</li>
+            <li>Phù hợp với các vị trí có yêu cầu kinh nghiệm cao</li>
+          </ul>
+        `;
+      } else if (avgScore >= 6) {
+        highlights = `
+          <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+            <li>Ứng viên có điểm đánh giá tốt (${avgScore}/10)</li>
+            <li>Thuộc nhóm ứng viên middle level</li>
+            <li>Có tiềm năng phát triển trong các vị trí chuyên môn</li>
+            <li>Cần tăng cường thêm kỹ năng để cạnh tranh ở vị trí senior</li>
+          </ul>
+        `;
+      } else {
+        highlights = `
+          <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+            <li>Ứng viên đang ở giai đoạn phát triển (${avgScore}/10)</li>
+            <li>Phù hợp với các vị trí junior hoặc entry-level</li>
+            <li>Cần đầu tư thêm vào đào tạo và phát triển kỹ năng</li>
+            <li>Có tiềm năng tăng trưởng nếu được đào tạo đúng hướng</li>
+          </ul>
+        `;
+      }
+      document.getElementById('analysisMarketHighlights').innerHTML = highlights;
+
+      // Suitable jobs based on evaluations
+      const topJobs = data.evaluations
+        .filter(e => e.score >= 6)
+        .slice(0, 5)
+        .map(e => e.jd_name.replace('.docx', ''));
+
+      if (topJobs.length > 0) {
+        document.getElementById('analysisSuitableJobs').innerHTML = `
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            ${topJobs.map(job => `
+              <span class="badge badge-info" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i class="bi bi-briefcase"></i> ${job}
+              </span>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        document.getElementById('analysisSuitableJobs').innerHTML = '<p style="color: var(--gray-500); margin: 0;">Chưa đủ dữ liệu để xác định vị trí phù hợp</p>';
+      }
+
+      // Salary estimation based on score
+      let salaryRange = '';
+      if (avgScore >= 8) {
+        salaryRange = `
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="flex: 1;">
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--gray-600);">Mức lương ước tính:</p>
+              <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--success-color);">
+                25-40 triệu VNĐ/tháng
+              </p>
+            </div>
+            <div style="padding: 1rem; background: #d1fae5; border-radius: 0.5rem;">
+              <p style="margin: 0; font-size: 0.75rem; color: var(--success-color); font-weight: 600;">Senior Level</p>
+            </div>
+          </div>
+          <p style="margin: 1rem 0 0 0; font-size: 0.75rem; color: var(--gray-500);">
+            <i class="bi bi-info-circle"></i> Dựa trên mức lương trung bình của thị trường Việt Nam cho vị trí Senior
+          </p>
+        `;
+      } else if (avgScore >= 6) {
+        salaryRange = `
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="flex: 1;">
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--gray-600);">Mức lương ước tính:</p>
+              <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--warning-color);">
+                15-25 triệu VNĐ/tháng
+              </p>
+            </div>
+            <div style="padding: 1rem; background: #fef3c7; border-radius: 0.5rem;">
+              <p style="margin: 0; font-size: 0.75rem; color: var(--warning-color); font-weight: 600;">Middle Level</p>
+            </div>
+          </div>
+          <p style="margin: 1rem 0 0 0; font-size: 0.75rem; color: var(--gray-500);">
+            <i class="bi bi-info-circle"></i> Dựa trên mức lương trung bình của thị trường Việt Nam cho vị trí Middle
+          </p>
+        `;
+      } else {
+        salaryRange = `
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="flex: 1;">
+              <p style="margin: 0 0 0.5rem 0; font-size: 0.875rem; color: var(--gray-600);">Mức lương ước tính:</p>
+              <p style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">
+                8-15 triệu VNĐ/tháng
+              </p>
+            </div>
+            <div style="padding: 1rem; background: #dbeafe; border-radius: 0.5rem;">
+              <p style="margin: 0; font-size: 0.75rem; color: var(--primary-color); font-weight: 600;">Junior Level</p>
+            </div>
+          </div>
+          <p style="margin: 1rem 0 0 0; font-size: 0.75rem; color: var(--gray-500);">
+            <i class="bi bi-info-circle"></i> Dựa trên mức lương trung bình của thị trường Việt Nam cho vị trí Junior
+          </p>
+        `;
+      }
+      document.getElementById('analysisSalaryRange').innerHTML = salaryRange;
+    }
+
+    function displayEvaluationList(evaluations, details) {
+      const html = evaluations.map((e, idx) => {
+        const detail = details[idx];
+        const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
+
+        return `
+          <div class="card mb-3" style="border-left: 4px solid var(--${scoreColor}-color);">
+            <div class="card-body">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <div style="flex: 1;">
+                  <h5 style="margin: 0; font-size: 1rem; font-weight: 600; color: var(--gray-800);">
+                    <i class="bi bi-file-earmark-text"></i>
+                    ${e.jd_name}
+                  </h5>
+                  <p style="margin: 0.25rem 0 0 0; font-size: 0.75rem; color: var(--gray-500);">
+                    <i class="bi bi-clock"></i>
+                    ${new Date(e.created_at).toLocaleString('vi-VN')}
+                  </p>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 2rem; font-weight: 700; color: var(--${scoreColor}-color);">${e.score}/10</div>
+                  ${detail && detail.details ? `
+                    <span class="badge badge-${scoreColor}" style="font-size: 0.75rem;">
+                      ${translateRecommendation(detail.details.recommendation) || 'Không có'}
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+              ${detail && detail.details ? `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                  <div>
+                    <p style="font-size: 0.75rem; font-weight: 600; color: var(--success-color); margin: 0 0 0.5rem 0;">
+                      <i class="bi bi-check-circle"></i> Điểm mạnh
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0; white-space: pre-line; line-height: 1.6;">
+                      ${detail.details.strengths?.substring(0, 200) || 'Không có'}${detail.details.strengths?.length > 200 ? '...' : ''}
+                    </p>
+                  </div>
+                  <div>
+                    <p style="font-size: 0.75rem; font-weight: 600; color: var(--warning-color); margin: 0 0 0.5rem 0;">
+                      <i class="bi bi-exclamation-triangle"></i> Điểm yếu
+                    </p>
+                    <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0; white-space: pre-line; line-height: 1.6;">
+                      ${detail.details.weaknesses?.substring(0, 200) || 'Không có'}${detail.details.weaknesses?.length > 200 ? '...' : ''}
+                    </p>
+                  </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                  <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.875rem; text-decoration: none;">
+                    <i class="bi bi-file-text"></i>
+                    Xem báo cáo đầy đủ
+                  </a>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('analysisEvaluationList').innerHTML = html || '<p style="color: var(--gray-500); text-align: center; padding: 2rem;">Chưa có đánh giá nào</p>';
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--success-color)';
+      dropZone.style.background = 'var(--gray-50)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--gray-300)';
+      dropZone.style.background = 'white';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--gray-300)';
+      dropZone.style.background = 'white';
+      uploadFiles(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', () => {
+      uploadFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    async function uploadFiles(files) {
+      const validFiles = files.filter(f => 
+        f.name.toLowerCase().endsWith('.pdf') || f.name.toLowerCase().endsWith('.docx')
+      );
+      
+      if (validFiles.length === 0) {
+        alert('Vui lòng chọn file .pdf hoặc .docx');
+        return;
+      }
+
+      const formData = new FormData();
+      validFiles.forEach(f => formData.append('files', f));
+      
+      try {
+        await fetch('/cvs/bulk', {method: 'POST', body: formData});
+        closeUploadModal();
+        loadCVs();
+      } catch (e) {
+        alert('Lỗi upload: ' + e.message);
+      }
+    }
+
+    async function loadCVs() {
+      const params = new URLSearchParams({
+        page: currentPage,
+        limit: currentLimit,
+        search: currentSearch,
+        status: currentStatus
+      });
+
+      const res = await fetch(`/cvs?${params}`);
+      const data = await res.json();
+
+      const tbody = document.getElementById('tableBody');
+
+      if (!data.items || data.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Chưa có CV nào</td></tr>';
+        updatePagination(data);
+        return;
+      }
+
+      // Load evaluation stats for each CV
+      const cvStats = await Promise.all(
+        data.items.map(cv => fetch(`/cvs/${encodeURIComponent(cv.name)}/evaluations`).then(r => r.json()))
+      );
+
+      tbody.innerHTML = data.items.map((cv, idx) => {
+        const stats = cvStats[idx];
+        const hasEvals = stats.total > 0;
+        const scoreClass = stats.best_score >= 8 ? 'score-high' : stats.best_score >= 6 ? 'score-medium' : 'score-low';
+
+        // Get top 3 JD evaluations
+        const topJDs = stats.evaluations.slice(0, 3);
+
+        return `
+          <tr>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 0.375rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <i class="bi bi-file-person" style="color: var(--success-color); font-size: 1.125rem;"></i>
+                  <span style="font-weight: 600; color: var(--gray-800);">${cv.name}</span>
+                  <button onclick="openContactModal('${cv.name}', '${cv.email || ''}', '${cv.phone || ''}')"
+                          class="btn btn-outline"
+                          style="padding: 0.25rem 0.5rem; margin-left: auto; font-size: 0.75rem;"
+                          title="Cập nhật thông tin liên hệ">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--gray-600);">
+                  <i class="bi bi-envelope"></i>
+                  <span>${cv.email || 'Chưa có email'}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--gray-600);">
+                  <i class="bi bi-telephone"></i>
+                  <span>${cv.phone || 'Chưa có SĐT'}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <input type="text"
+                     value="${cv.category || ''}"
+                     placeholder="Danh mục"
+                     class="form-control"
+                     style="padding: 0.375rem 0.5rem; font-size: 0.875rem;"
+                     onchange="updateCVMetadata('${cv.name}', 'category', this.value)">
+            </td>
+            <td>
+              <input type="text"
+                     value="${cv.department || ''}"
+                     placeholder="Phòng ban"
+                     class="form-control"
+                     style="padding: 0.375rem 0.5rem; font-size: 0.875rem;"
+                     onchange="updateCVMetadata('${cv.name}', 'department', this.value)">
+            </td>
+            <td>
+              ${hasEvals ? `
+                <span class="status-evaluated">
+                  <i class="bi bi-check-circle-fill"></i>
+                  ${stats.total} đánh giá
+                </span>
+              ` : '<span class="status-not-evaluated">-</span>'}
+            </td>
+            <td>
+              ${hasEvals ? `
+                <div class="jd-list">
+                  ${topJDs.map(e => `
+                    <div class="jd-item">
+                      <div class="jd-item-name">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.jd_name}</span>
+                      </div>
+                      <div class="jd-item-score ${e.score >= 8 ? 'score-high' : e.score >= 6 ? 'score-medium' : 'score-low'}">
+                        Điểm: ${e.score}/10
+                      </div>
+                    </div>
+                  `).join('')}
+                  ${stats.total > 3 ? `<small style="color: var(--gray-500);">+${stats.total - 3} JDs khác</small>` : ''}
+                </div>
+              ` : '<span style="color: var(--gray-400); font-size: 0.75rem;">Chưa có</span>'}
+            </td>
+            <td class="text-right">
+              <div style="display: flex; gap: 0.25rem; justify-content: flex-end;">
+                ${hasEvals ? `
+                  <button onclick="showDetailedAnalysis('${cv.name}')" class="btn btn-primary" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" title="Xem phân tích chi tiết">
+                    <i class="bi bi-graph-up"></i>
+                  </button>
+                ` : ''}
+                <button onclick="deleteCV('${cv.name}')" class="btn btn-outline" style="padding: 0.375rem 0.75rem; color: var(--danger-color);" title="Xóa CV">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      updatePagination(data);
+    }
+
+    async function showHistory(cvName) {
+      document.getElementById('historyModal').classList.add('active');
+      document.getElementById('modalCVName').textContent = cvName;
+      document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">Đang tải...</p>';
+
+      const res = await fetch(`/cvs/${encodeURIComponent(cvName)}/evaluations`);
+      const data = await res.json();
+
+      // Update stats
+      document.getElementById('modalTotal').textContent = data.total;
+      document.getElementById('modalBest').textContent = data.best_score ? `${data.best_score}/10` : '-';
+      document.getElementById('modalAvg').textContent = data.average_score ? `${data.average_score}/10` : '-';
+
+      // Render history
+      if (data.evaluations.length === 0) {
+        document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">Chưa có lịch sử đánh giá</p>';
+        return;
+      }
+
+      document.getElementById('historyList').innerHTML = data.evaluations.map(e => {
+        const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
+        return `
+          <div class="card mb-3" style="border-left: 4px solid var(--${scoreColor}-color);">
+            <div class="card-body">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">${e.jd_name}</h4>
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--${scoreColor}-color);">${e.score}/10</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                ${e.jd_category ? `<span class="badge badge-info">${e.jd_category}</span>` : ''}
+                ${e.jd_department ? `<span class="badge" style="background: var(--purple-500); color: white;">${e.jd_department}</span>` : ''}
+                <span class="badge" style="background: var(--gray-200); color: var(--gray-700);">${formatDate(new Date(e.created_at).getTime() / 1000)}</span>
+              </div>
+              <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;">
+                <i class="bi bi-file-text"></i>
+                Xem báo cáo
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updatePagination(data) {
+      const pagination = document.getElementById('pagination');
+      const total = data.total || 0;
+      const pages = data.pages || 1;
+      const start = total === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
+      const end = Math.min(currentPage * currentLimit, total);
+
+      // Build page size selector
+      const pageSizeHTML = `
+        <div class="e-pagesize">
+          <span>Hiển thị</span>
+          <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+            <option value="10" ${currentLimit === 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${currentLimit === 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${currentLimit === 50 ? 'selected' : ''}>50</option>
+            <option value="100" ${currentLimit === 100 ? 'selected' : ''}>100</option>
+          </select>
+          <span>mục/trang</span>
+        </div>
+      `;
+
+      // Build page navigation
+      const maxPageButtons = 7;
+      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(pages, startPage + maxPageButtons - 1);
+
+      if (endPage - startPage < maxPageButtons - 1) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+
+      let pagesHTML = '';
+      for (let i = startPage; i <= endPage; i++) {
+        pagesHTML += `
+          <button class="e-pagerbutton ${i === currentPage ? 'e-currentitem' : ''}"
+                  onclick="goToPage(${i})"
+                  ${i === currentPage ? 'disabled' : ''}>
+            ${i}
+          </button>
+        `;
+      }
+
+      const pagerHTML = `
+        ${pageSizeHTML}
+        <div class="e-pagercontainer">
+          <div class="e-pagerinfo">
+            Hiển thị <strong>${start}</strong> đến <strong>${end}</strong> trong tổng số <strong>${total}</strong> mục
+          </div>
+          <div class="e-pagernav">
+            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">
+              <i class="bi bi-chevron-bar-left"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            ${pagesHTML}
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Trang sau">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Trang cuối">
+              <i class="bi bi-chevron-bar-right"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      pagination.innerHTML = pagerHTML;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadCVs();
+    }
+
+    function changePageSize(size) {
+      currentLimit = parseInt(size);
+      currentPage = 1;
+      loadCVs();
+    }
+
+    async function deleteCV(name) {
+      if (!confirm(`Xóa CV: ${name}?`)) return;
+      await fetch(`/cvs/${encodeURIComponent(name)}`, {method: 'DELETE'});
+      loadCVs();
+    }
+
+    async function updateCVMetadata(cvName, field, value) {
+      try {
+        const payload = {};
+        payload[field] = value || null;
+
+        await fetch(`/cvs/${encodeURIComponent(cvName)}/metadata`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        alert('Lỗi cập nhật: ' + e.message);
+      }
+    }
+
+    function formatDate(timestamp) {
+      return new Date(timestamp * 1000).toLocaleDateString('vi-VN');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentSearch = e.target.value;
+      currentPage = 1;
+      loadCVs();
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', (e) => {
+      currentStatus = e.target.value;
+      currentPage = 1;
+      loadCVs();
+    });
+
+    document.getElementById('uploadModal').addEventListener('click', (e) => {
+      if (e.target.id === 'uploadModal') closeUploadModal();
+    });
+
+    document.getElementById('historyModal').addEventListener('click', (e) => {
+      if (e.target.id === 'historyModal') closeHistoryModal();
+    });
+
+    document.getElementById('analysisModal').addEventListener('click', (e) => {
+      if (e.target.id === 'analysisModal') closeAnalysisModal();
+    });
+
+    document.getElementById('contactModal').addEventListener('click', (e) => {
+      if (e.target.id === 'contactModal') closeContactModal();
+    });
+
+    loadCVs();
+  </script>
+  <script src="/assets/js/settings.js?v=2"></script>
+</body>
+</html>

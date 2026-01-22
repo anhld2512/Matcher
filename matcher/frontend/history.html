@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Sử Đánh Giá | Matcher</title>
+  <link rel="stylesheet" href="/assets/css/shared.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .eval-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      transition: all 0.2s;
+      border-left: 4px solid var(--gray-300);
+    }
+    
+    .eval-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    
+    .eval-card.excellent { border-left-color: var(--success-color); }
+    .eval-card.good { border-left-color: var(--warning-color); }
+    .eval-card.poor { border-left-color: var(--danger-color); }
+    
+    .score-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .group-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      margin: 1.5rem 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* EJ2 Grid-style Pagination */
+    .e-gridpager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    .e-pagerinfo {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagercontainer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .e-pagernav {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .e-pagerbutton {
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .e-pagerbutton:hover:not(:disabled) {
+      background: var(--gray-50);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .e-pagerbutton.e-currentitem {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .e-pagerbutton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .e-pagesize {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagesize select {
+      padding: 0.375rem 0.5rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Table improvements */
+    .table-container {
+      overflow-x: auto;
+      position: relative;
+    }
+
+    table {
+      min-width: 900px;
+    }
+
+    table th {
+      white-space: nowrap;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Frozen action column */
+    table th:last-child,
+    table td:last-child {
+      position: sticky;
+      right: 0;
+      background: white;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+      z-index: 5;
+    }
+
+    table th:last-child {
+      z-index: 15;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+          <i class="bi bi-diagram-3"></i>
+          Matcher
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+          <i class="bi bi-bar-chart"></i>
+          <span>So Sánh</span>
+        </a>
+        <a href="/jd-management.html" class="nav-item">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Quản Lý JD</span>
+        </a>
+        <a href="/cv-management.html" class="nav-item">
+          <i class="bi bi-person-badge"></i>
+          <span>Quản Lý CV</span>
+        </a>
+        <a href="/history.html" class="nav-item active">
+          <i class="bi bi-clock-history"></i>
+          <span>Lịch Sử</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <a href="#" class="nav-item" onclick="openAiSettingsModal()">
+          <i class="bi bi-gear"></i>
+          <span>Cấu hình AI</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="header-title">Lịch Sử Đánh Giá</h1>
+        <div class="header-toolbar">
+          <button class="btn btn-primary" onclick="openStatsModal()">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Thống Kê</span>
+          </button>
+          <select id="viewMode" class="form-control" style="width: auto;" onchange="changeViewMode()">
+            <option value="card">Dạng Thẻ</option>
+            <option value="table">Dạng Bảng</option>
+          </select>
+          <button class="btn btn-outline" onclick="loadHistory()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Làm mới
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <!-- Simplified Filters -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem;">
+              <input type="text" id="searchAll" placeholder="Tìm kiếm CV hoặc JD..." class="form-control" oninput="applyFilters()">
+              <select id="categoryFilter" class="form-control" onchange="applyFilters()">
+                <option value="">Danh mục</option>
+              </select>
+              <select id="departmentFilter" class="form-control" onchange="applyFilters()">
+                <option value="">Phòng ban</option>
+              </select>
+              <select id="scoreFilter" class="form-control" onchange="applyFilters()">
+                <option value="">Điểm số</option>
+                <option value="8-10">8-10 (Xuất sắc)</option>
+                <option value="6-8">6-8 (Tốt)</option>
+                <option value="4-6">4-6 (Trung bình)</option>
+                <option value="0-4">0-4 (Yếu)</option>
+              </select>
+              <select id="groupBy" class="form-control" onchange="applyFilters()">
+                <option value="">Nhóm theo</option>
+                <option value="jd">JD</option>
+                <option value="cv">CV</option>
+                <option value="category">Danh mục</option>
+                <option value="department">Phòng ban</option>
+                <option value="date">Ngày</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContainer">
+          <div class="text-center" style="padding: 3rem; color: var(--gray-400);">
+            <i class="bi bi-hourglass-split" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+            Đang tải dữ liệu...
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Stats Modal -->
+  <div id="statsModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), #6366f1); color: white;">
+        <h3 class="modal-title" style="color: white;">
+          <i class="bi bi-bar-chart-fill"></i>
+          Thống Kê Đánh Giá
+        </h3>
+        <button class="modal-close" onclick="closeStatsModal()" style="color: white;">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+          <div class="card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+            <div class="card-body text-center" style="color: white;">
+              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Tổng Đánh Giá</p>
+              <p id="totalEvalsModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
+            </div>
+          </div>
+          <div class="card" style="background: linear-gradient(135deg, var(--primary-color), #4338ca);">
+            <div class="card-body text-center" style="color: white;">
+              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Điểm Trung Bình</p>
+              <p id="avgScoreModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
+            </div>
+          </div>
+          <div class="card" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+            <div class="card-body text-center" style="color: white;">
+              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Xuất Sắc (≥8)</p>
+              <p id="excellentCountModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
+            </div>
+          </div>
+          <div class="card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <div class="card-body text-center" style="color: white;">
+              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Hôm Nay</p>
+              <p id="todayCountModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allEvaluations = [];
+    let filteredEvaluations = [];
+    let currentViewMode = 'card';
+    let statsData = null;
+    let currentTablePage = 1;
+    let currentTableLimit = 10;
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function openStatsModal() {
+      document.getElementById('statsModal').classList.add('active');
+      if (statsData) {
+        document.getElementById('totalEvalsModal').textContent = statsData.total_evaluations;
+        document.getElementById('avgScoreModal').textContent = statsData.avg_score;
+        document.getElementById('excellentCountModal').textContent = statsData.excellent_count;
+        document.getElementById('todayCountModal').textContent = statsData.today_count;
+      }
+    }
+
+    function closeStatsModal() {
+      document.getElementById('statsModal').classList.remove('active');
+    }
+
+    function changeViewMode() {
+      currentViewMode = document.getElementById('viewMode').value;
+      renderResults();
+    }
+
+    async function loadHistory() {
+      try {
+        // Load evaluations
+        const res = await fetch('/evaluations');
+        const data = await res.json();
+        
+        allEvaluations = data.items || [];
+        statsData = data.stats;
+
+        // Load categories and departments
+        await loadFilters();
+        
+        applyFilters();
+      } catch (e) {
+        console.error('Error loading history:', e);
+        document.getElementById('resultsContainer').innerHTML = `
+          <div class="text-center" style="padding: 3rem; color: var(--danger-color);">
+            <i class="bi bi-exclamation-triangle" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+            Lỗi tải dữ liệu: ${e.message}
+          </div>
+        `;
+      }
+    }
+
+    async function loadFilters() {
+      try {
+        const [catRes, deptRes] = await Promise.all([
+          fetch('/categories'),
+          fetch('/departments')
+        ]);
+        
+        const categories = await catRes.json();
+        const departments = await deptRes.json();
+        
+        // Populate category filter
+        const catSelect = document.getElementById('categoryFilter');
+        categories.categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          catSelect.appendChild(opt);
+        });
+        
+        // Populate department filter
+        const deptSelect = document.getElementById('departmentFilter');
+        departments.departments.forEach(dept => {
+          const opt = document.createElement('option');
+          opt.value = dept;
+          opt.textContent = dept;
+          deptSelect.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Error loading filters:', e);
+      }
+    }
+
+    function applyFilters() {
+      const searchAll = document.getElementById('searchAll').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const department = document.getElementById('departmentFilter').value;
+      const scoreRange = document.getElementById('scoreFilter').value;
+      const groupBy = document.getElementById('groupBy').value;
+
+      // Filter evaluations
+      filteredEvaluations = allEvaluations.filter(e => {
+        // Search in both JD and CV names
+        if (searchAll &&
+            !e.jd_name.toLowerCase().includes(searchAll) &&
+            !e.cv_name.toLowerCase().includes(searchAll)) {
+          return false;
+        }
+        if (category && e.jd_category !== category) return false;
+        if (department && e.jd_department !== department) return false;
+
+        if (scoreRange && e.score !== null) {
+          const [min, max] = scoreRange.split('-').map(Number);
+          if (e.score < min || e.score > max) return false;
+        }
+
+        return true;
+      });
+
+      // Reset pagination when filters change
+      currentTablePage = 1;
+
+      renderResults(groupBy);
+    }
+
+    function renderResults(groupBy = '') {
+      const container = document.getElementById('resultsContainer');
+      
+      if (filteredEvaluations.length === 0) {
+        container.innerHTML = `
+          <div class="text-center" style="padding: 3rem; color: var(--gray-400);">
+            <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+            Không tìm thấy kết quả nào
+          </div>
+        `;
+        return;
+      }
+      
+      if (groupBy) {
+        renderGrouped(groupBy);
+      } else if (currentViewMode === 'card') {
+        renderCardView();
+      } else {
+        renderTableView();
+      }
+    }
+
+    function renderGrouped(groupBy) {
+      const grouped = {};
+      
+      filteredEvaluations.forEach(e => {
+        let key;
+        if (groupBy === 'jd') key = e.jd_name;
+        else if (groupBy === 'cv') key = e.cv_name;
+        else if (groupBy === 'category') key = e.jd_category || 'Uncategorized';
+        else if (groupBy === 'department') key = e.jd_department || 'Unassigned';
+        else if (groupBy === 'date') key = new Date(e.created_at).toLocaleDateString('vi-VN');
+        
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(e);
+      });
+      
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = Object.entries(grouped).map(([key, items]) => {
+        const avgScore = (items.reduce((sum, e) => sum + (e.score || 0), 0) / items.length).toFixed(1);
+        
+        return `
+          <div class="group-header">
+            <div>
+              <h3 style="margin: 0; font-size: 1.125rem;">${key}</h3>
+              <p style="margin: 0.25rem 0 0; font-size: 0.875rem; opacity: 0.9;">${items.length} đánh giá • Điểm TB: ${avgScore}</p>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            ${items.map(e => renderEvalCard(e)).join('')}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCardView() {
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+          ${filteredEvaluations.map(e => renderEvalCard(e)).join('')}
+        </div>
+      `;
+    }
+
+    function renderEvalCard(e) {
+      const scoreClass = e.score >= 8 ? 'excellent' : e.score >= 6 ? 'good' : 'poor';
+      const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
+      
+      return `
+        <div class="eval-card ${scoreClass}">
+          <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem;">
+            <div class="score-circle" style="background: var(--${scoreColor}-color);">
+              ${e.score || '-'}
+            </div>
+            <div style="flex: 1;">
+              <h4 style="margin: 0 0 0.25rem; font-size: 1rem; font-weight: 600;">${e.cv_name}</h4>
+              <p style="margin: 0; font-size: 0.875rem; color: var(--gray-600);">${e.jd_name}</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            ${e.jd_category ? `<span class="badge badge-info">${e.jd_category}</span>` : ''}
+            ${e.jd_department ? `<span class="badge" style="background: #8b5cf6; color: white;">${e.jd_department}</span>` : ''}
+            <span class="badge" style="background: var(--gray-200); color: var(--gray-700);">
+              <i class="bi bi-calendar"></i>
+              ${new Date(e.created_at).toLocaleDateString('vi-VN')}
+            </span>
+          </div>
+          <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="width: 100%;">
+            <i class="bi bi-file-text"></i>
+            Xem báo cáo chi tiết
+          </a>
+        </div>
+      `;
+    }
+
+    function renderTableView() {
+      const container = document.getElementById('resultsContainer');
+
+      // Paginate data
+      const total = filteredEvaluations.length;
+      const pages = Math.ceil(total / currentTableLimit);
+      const start = (currentTablePage - 1) * currentTableLimit;
+      const end = Math.min(start + currentTableLimit, total);
+      const pageItems = filteredEvaluations.slice(start, end);
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>CV</th>
+                  <th>JD</th>
+                  <th>Danh mục</th>
+                  <th>Phòng ban</th>
+                  <th>Điểm</th>
+                  <th>Ngày</th>
+                  <th class="text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pageItems.map(e => {
+                  const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
+                  return `
+                    <tr>
+                      <td>${e.cv_name}</td>
+                      <td>${e.jd_name}</td>
+                      <td>${e.jd_category ? `<span class="badge badge-info">${e.jd_category}</span>` : '-'}</td>
+                      <td>${e.jd_department ? `<span class="badge" style="background: #8b5cf6; color: white;">${e.jd_department}</span>` : '-'}</td>
+                      <td><span style="font-weight: 600; color: var(--${scoreColor}-color);">${e.score || '-'}/10</span></td>
+                      <td style="color: var(--gray-600);">${new Date(e.created_at).toLocaleDateString('vi-VN')}</td>
+                      <td class="text-right">
+                        <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="padding: 0.375rem 0.75rem;">
+                          <i class="bi bi-file-text"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div id="tablePagination" class="e-gridpager"></div>
+        </div>
+      `;
+
+      updateTablePagination(total, pages);
+    }
+
+    function updateTablePagination(total, pages) {
+      const pagination = document.getElementById('tablePagination');
+      if (!pagination) return;
+
+      const start = total === 0 ? 0 : (currentTablePage - 1) * currentTableLimit + 1;
+      const end = Math.min(currentTablePage * currentTableLimit, total);
+
+      // Build page size selector
+      const pageSizeHTML = `
+        <div class="e-pagesize">
+          <span>Hiển thị</span>
+          <select id="tablePageSizeSelect" onchange="changeTablePageSize(this.value)">
+            <option value="10" ${currentTableLimit === 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${currentTableLimit === 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${currentTableLimit === 50 ? 'selected' : ''}>50</option>
+            <option value="100" ${currentTableLimit === 100 ? 'selected' : ''}>100</option>
+          </select>
+          <span>mục/trang</span>
+        </div>
+      `;
+
+      // Build page navigation
+      const maxPageButtons = 7;
+      let startPage = Math.max(1, currentTablePage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(pages, startPage + maxPageButtons - 1);
+
+      if (endPage - startPage < maxPageButtons - 1) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+
+      let pagesHTML = '';
+      for (let i = startPage; i <= endPage; i++) {
+        pagesHTML += `
+          <button class="e-pagerbutton ${i === currentTablePage ? 'e-currentitem' : ''}"
+                  onclick="goToTablePage(${i})"
+                  ${i === currentTablePage ? 'disabled' : ''}>
+            ${i}
+          </button>
+        `;
+      }
+
+      const pagerHTML = `
+        ${pageSizeHTML}
+        <div class="e-pagercontainer">
+          <div class="e-pagerinfo">
+            Hiển thị <strong>${start}</strong> đến <strong>${end}</strong> trong tổng số <strong>${total}</strong> mục
+          </div>
+          <div class="e-pagernav">
+            <button class="e-pagerbutton" onclick="goToTablePage(1)" ${currentTablePage === 1 ? 'disabled' : ''} title="Trang đầu">
+              <i class="bi bi-chevron-bar-left"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToTablePage(${currentTablePage - 1})" ${currentTablePage === 1 ? 'disabled' : ''} title="Trang trước">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            ${pagesHTML}
+            <button class="e-pagerbutton" onclick="goToTablePage(${currentTablePage + 1})" ${currentTablePage === pages ? 'disabled' : ''} title="Trang sau">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToTablePage(${pages})" ${currentTablePage === pages ? 'disabled' : ''} title="Trang cuối">
+              <i class="bi bi-chevron-bar-right"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      pagination.innerHTML = pagerHTML;
+    }
+
+    function goToTablePage(page) {
+      currentTablePage = page;
+      renderTableView();
+    }
+
+    function changeTablePageSize(size) {
+      currentTableLimit = parseInt(size);
+      currentTablePage = 1;
+      renderTableView();
+    }
+
+    // Close modal on outside click
+    document.getElementById('statsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'statsModal') closeStatsModal();
+    });
+
+    // Initialize
+    loadHistory();
+  </script>
+  <script src="/assets/js/settings.js?v=2"></script>
+</body>
+</html>

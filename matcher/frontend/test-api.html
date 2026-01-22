@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Config API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test AI Config API</h1>
+
+    <h2>Test 1: List Ollama Models</h2>
+    <button onclick="testListModels()">Run Test</button>
+    <pre id="result1">Click button to test...</pre>
+
+    <h2>Test 2: Pull Model (llama3)</h2>
+    <button onclick="testPullModel()">Run Test (Takes time!)</button>
+    <pre id="result2">Click button to test...</pre>
+
+    <h2>Test 3: Check Ollama Direct</h2>
+    <button onclick="testOllamaDirect()">Run Test</button>
+    <pre id="result3">Click button to test...</pre>
+
+    <script>
+    async function testListModels() {
+        const result = document.getElementById('result1');
+        result.textContent = '⏳ Testing...';
+        result.className = '';
+
+        try {
+            const url = '/ai-models/ollama?host=localhost&port=11434';
+            console.log('Calling:', url);
+
+            const res = await fetch(url);
+            console.log('Response status:', res.status);
+
+            const data = await res.json();
+            console.log('Response data:', data);
+
+            if (data.models && data.models.length > 0) {
+                result.className = 'success';
+                result.textContent = '✅ SUCCESS!\n\n' +
+                    'Models found:\n' +
+                    data.models.map(m => '  • ' + m).join('\n') +
+                    '\n\nFull response:\n' +
+                    JSON.stringify(data, null, 2);
+            } else {
+                result.className = 'error';
+                result.textContent = '❌ NO MODELS\n\n' + JSON.stringify(data, null, 2);
+            }
+        } catch (e) {
+            result.className = 'error';
+            result.textContent = '❌ ERROR:\n\n' + e.message + '\n\nCheck console for details';
+            console.error('Error:', e);
+        }
+    }
+
+    async function testPullModel() {
+        const result = document.getElementById('result2');
+        result.textContent = '⏳ Pulling llama3... (This will take time!)';
+        result.className = '';
+
+        try {
+            const url = '/ai-models/pull?provider=ollama&model_name=llama3&host=localhost&port=11434';
+            console.log('Calling:', url);
+
+            const res = await fetch(url, { method: 'POST' });
+            console.log('Response status:', res.status);
+
+            const data = await res.json();
+            console.log('Response data:', data);
+
+            if (res.ok) {
+                result.className = 'success';
+                result.textContent = '✅ SUCCESS!\n\n' + JSON.stringify(data, null, 2);
+            } else {
+                result.className = 'error';
+                result.textContent = '❌ FAILED\n\nStatus: ' + res.status + '\n\n' + JSON.stringify(data, null, 2);
+            }
+        } catch (e) {
+            result.className = 'error';
+            result.textContent = '❌ ERROR:\n\n' + e.message;
+            console.error('Error:', e);
+        }
+    }
+
+    async function testOllamaDirect() {
+        const result = document.getElementById('result3');
+        result.textContent = '⏳ Testing direct Ollama connection...';
+        result.className = '';
+
+        try {
+            // Note: This will fail due to CORS, but we can see the error
+            const res = await fetch('http://localhost:11434/api/tags');
+            const data = await res.json();
+
+            result.className = 'success';
+            result.textContent = '✅ Ollama is running!\n\n' + JSON.stringify(data, null, 2);
+        } catch (e) {
+            result.className = 'error';
+            result.textContent = '❌ Cannot connect directly (CORS expected)\n\n' +
+                'Error: ' + e.message + '\n\n' +
+                'This is normal. Backend should proxy the request.';
+        }
+    }
+    </script>
+</body>
+</html>

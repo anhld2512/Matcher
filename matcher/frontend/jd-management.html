@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý JD | Matcher</title>
+  <link rel="stylesheet" href="/assets/css/shared.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="icon" href="/assets/favicon.ico">
+  <style>
+    /* EJ2 Grid-style Pagination */
+    .e-gridpager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    .e-pagerinfo {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagercontainer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .e-pagernav {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .e-pagerbutton {
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .e-pagerbutton:hover:not(:disabled) {
+      background: var(--gray-50);
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+
+    .e-pagerbutton.e-currentitem {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .e-pagerbutton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .e-pagesize {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+    }
+
+    .e-pagesize select {
+      padding: 0.375rem 0.5rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 0.25rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    /* Table improvements */
+    .table-container {
+      overflow-x: auto;
+      position: relative;
+    }
+
+    table {
+      min-width: 800px;
+    }
+
+    table th {
+      white-space: nowrap;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Frozen action column */
+    table th:last-child,
+    table td:last-child {
+      position: sticky;
+      right: 0;
+      background: white;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
+      z-index: 5;
+    }
+
+    table th:last-child {
+      z-index: 15;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+          <i class="bi bi-diagram-3"></i>
+          Matcher
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/" class="nav-item">
+          <i class="bi bi-bar-chart"></i>
+          <span>So Sánh</span>
+        </a>
+        <a href="/jd-management.html" class="nav-item active">
+          <i class="bi bi-file-earmark-text"></i>
+          <span>Quản Lý JD</span>
+        </a>
+        <a href="/cv-management.html" class="nav-item">
+          <i class="bi bi-person-badge"></i>
+          <span>Quản Lý CV</span>
+        </a>
+        <a href="/history.html" class="nav-item">
+          <i class="bi bi-clock-history"></i>
+          <span>Lịch Sử</span>
+        </a>
+        <div style="flex: 1;"></div>
+        <a href="#" class="nav-item" onclick="openAiSettingsModal()">
+          <i class="bi bi-gear"></i>
+          <span>Cấu hình AI</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="header-title">Quản Lý Job Descriptions</h1>
+        <div class="header-toolbar">
+          <button class="btn btn-primary" onclick="openUploadModal()">
+            <i class="bi bi-cloud-upload"></i>
+            Upload JD
+          </button>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="content">
+        <!-- Search -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm JD..." class="form-control">
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 35%;">Tên File</th>
+                  <th style="width: 15%;">Danh Mục</th>
+                  <th style="width: 15%;">Phòng Ban</th>
+                  <th style="width: 25%;">Tiêu Chí (Tags)</th>
+                  <th style="width: 15%;">Ngày Upload</th>
+                  <th class="text-right" style="width: 8%;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="pagination" class="e-gridpager"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="bi bi-cloud-upload"></i>
+          Upload Job Descriptions
+        </h3>
+        <button class="modal-close" onclick="closeUploadModal()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="dropZone" style="border: 2px dashed var(--gray-300); border-radius: 0.5rem; padding: 3rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s;">
+          <input type="file" id="fileInput" accept=".docx" multiple style="display: none;">
+          <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: var(--gray-400); display: block; margin-bottom: 1rem;"></i>
+          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Kéo thả file JD vào đây</p>
+          <p style="font-size: 0.875rem; color: var(--gray-500);">hoặc click để chọn file (.docx)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags Modal -->
+  <div id="tagsModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="tagsModalTitle">
+          <i class="bi bi-tags"></i>
+          Quản Lý Tiêu Chí
+        </h3>
+        <button class="modal-close" onclick="closeTagsModal()">
+          <i class="bi bi-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small text-muted">Danh sách tiêu chí hiện có</label>
+          <div id="modalTagsContainer" class="d-flex flex-wrap gap-2 p-3 border rounded bg-light" style="min-height: 80px;">
+            <!-- Tags rendered here -->
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-muted">Thêm tiêu chí mới</label>
+          <div class="d-flex gap-2">
+            <input type="text" id="newTagInput" class="form-control" placeholder="Nhập tiêu chí và nhấn Enter...">
+            <button class="btn btn-outline-primary" onclick="addTag()">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-end gap-2 pt-3 border-top">
+        <button class="btn btn-outline" onclick="closeTagsModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="saveTags()">Lưu Thay Đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let currentLimit = 10;
+    let currentSearch = '';
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    function openUploadModal() {
+      document.getElementById('uploadModal').classList.add('active');
+    }
+
+    function closeUploadModal() {
+      document.getElementById('uploadModal').classList.remove('active');
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--primary-color)';
+      dropZone.style.background = 'var(--gray-50)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--gray-300)';
+      dropZone.style.background = 'white';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--gray-300)';
+      dropZone.style.background = 'white';
+      uploadFiles(Array.from(e.dataTransfer.files));
+    });
+
+    fileInput.addEventListener('change', () => {
+      uploadFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    async function uploadFiles(files) {
+      const validFiles = files.filter(f => f.name.toLowerCase().endsWith('.docx'));
+      if (validFiles.length === 0) {
+        alert('Vui lòng chọn file .docx');
+        return;
+      }
+
+      for (const file of validFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+          await fetch('/jds', {method: 'POST', body: formData});
+        } catch (e) {
+          alert('Lỗi upload: ' + e.message);
+        }
+      }
+      
+      closeUploadModal();
+      loadJDs();
+    }
+
+    let currentEditingJd = null;
+    let currentTags = [];
+
+    async function loadJDs() {
+      const res = await fetch(`/jds?page=${currentPage}&limit=${currentLimit}&search=${currentSearch}`);
+      const data = await res.json();
+
+      const tbody = document.getElementById('tableBody');
+
+      if (!data.items || data.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Chưa có JD nào</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.items.map(jd => {
+        const tags = Array.isArray(jd.tags) ? jd.tags : [];
+        const tagsHtml = tags.length > 0
+          ? tags.map(t => `<span class="badge bg-light text-dark border me-1 mb-1 d-inline-block">${t}</span>`).join('') 
+          : '<span class="text-muted small d-inline-block mb-1 me-1">Chưa có tiêu chí</span>';
+        
+        // Escape quotes for onclick
+        const jdNameSafe = jd.name.replace(/'/g, "\\'");
+        const tagsJson = JSON.stringify(tags).replace(/"/g, '&quot;');
+
+        return `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              <i class="bi bi-file-earmark-text text-primary me-2"></i>
+              <div>
+                <div class="fw-medium">${jd.name}</div>
+                <div class="small text-muted">${formatSize(jd.size)}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="small text-muted mb-1">Danh mục</div>
+            <input type="text"
+                   value="${jd.category || ''}"
+                   class="form-control form-control-sm"
+                   onchange="updateMetadata('${jdNameSafe}', 'category', this.value)">
+          </td>
+          <td>
+            <div class="small text-muted mb-1">Phòng ban</div>
+            <input type="text"
+                   value="${jd.department || ''}"
+                   class="form-control form-control-sm"
+                   onchange="updateMetadata('${jdNameSafe}', 'department', this.value)">
+          </td>
+          <td style="min-width: 250px;">
+            <div class="d-flex flex-wrap align-items-center gap-1">
+              ${tagsHtml}
+              <button class="btn btn-sm btn-light border rounded-circle" 
+                      style="width: 24px; height: 24px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
+                      onclick="openTagsModal('${jdNameSafe}', ${tagsJson})"
+                      title="Chỉnh sửa tiêu chí">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+          </td>
+          <td class="text-muted small">${formatDate(jd.modified)}</td>
+          <td class="text-end">
+            <button onclick="deleteJD('${jdNameSafe}')" class="btn btn-sm btn-outline-danger border-0">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `}).join('');
+
+      updatePagination(data);
+    }
+
+    // --- Tags Management ---
+
+    function openTagsModal(jdName, tags) {
+      currentEditingJd = jdName;
+      currentTags = [...tags]; // Clone array
+      renderTagsInModal();
+      document.getElementById('tagsModalTitle').textContent = `Tiêu Chí: ${jdName}`;
+      document.getElementById('newTagInput').value = '';
+      document.getElementById('tagsModal').classList.add('active');
+      setTimeout(() => document.getElementById('newTagInput').focus(), 100);
+    }
+
+    function closeTagsModal() {
+      document.getElementById('tagsModal').classList.remove('active');
+    }
+
+    function renderTagsInModal() {
+      const container = document.getElementById('modalTagsContainer');
+      container.innerHTML = currentTags.map((tag, index) => `
+        <span class="badge bg-light text-dark border p-2 d-inline-flex align-items-center gap-2">
+          ${tag}
+          <i class="bi bi-x cursor-pointer text-muted hover-danger" onclick="removeTag(${index})" style="cursor: pointer;"></i>
+        </span>
+      `).join('');
+    }
+
+    function addTag() {
+      const input = document.getElementById('newTagInput');
+      const val = input.value.trim();
+      if (val && !currentTags.includes(val)) {
+        currentTags.push(val);
+        renderTagsInModal();
+        input.value = '';
+      }
+    }
+
+    function removeTag(index) {
+      currentTags.splice(index, 1);
+      renderTagsInModal();
+    }
+
+    async function saveTags() {
+      if (!currentEditingJd) return;
+
+      const btn = document.querySelector('#tagsModal .btn-primary');
+      const originalText = btn.textContent;
+      btn.textContent = 'Đang lưu...';
+      btn.disabled = true;
+
+      try {
+        await fetch(`/jds/${encodeURIComponent(currentEditingJd)}/metadata`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({tags: currentTags})
+        });
+        closeTagsModal();
+        loadJDs(); 
+      } catch (e) {
+        alert('Lỗi cập nhật tags: ' + e.message);
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Add Tag on Enter key
+    document.getElementById('newTagInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+      }
+    });
+
+
+    // --- Metadata & Delete ---
+
+    async function updateMetadata(jdName, field, value) {
+      try {
+        const payload = {};
+        payload[field] = value || null;
+
+        await fetch(`/jds/${encodeURIComponent(jdName)}/metadata`, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        console.error('Update failed:', e);
+      }
+    }
+
+    function updatePagination(data) {
+      const pagination = document.getElementById('pagination');
+      const total = data.total || 0;
+      const pages = data.pages || 1;
+      const start = total === 0 ? 0 : (currentPage - 1) * currentLimit + 1;
+      const end = Math.min(currentPage * currentLimit, total);
+
+      // Build page size selector
+      const pageSizeHTML = `
+        <div class="e-pagesize">
+          <span>Hiển thị</span>
+          <select id="pageSizeSelect" onchange="changePageSize(this.value)">
+            <option value="10" ${currentLimit === 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${currentLimit === 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${currentLimit === 50 ? 'selected' : ''}>50</option>
+            <option value="100" ${currentLimit === 100 ? 'selected' : ''}>100</option>
+          </select>
+          <span>mục/trang</span>
+        </div>
+      `;
+
+      // Build page navigation
+      const maxPageButtons = 7;
+      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(pages, startPage + maxPageButtons - 1);
+
+      if (endPage - startPage < maxPageButtons - 1) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+
+      let pagesHTML = '';
+      for (let i = startPage; i <= endPage; i++) {
+        pagesHTML += `
+          <button class="e-pagerbutton ${i === currentPage ? 'e-currentitem' : ''}"
+                  onclick="goToPage(${i})"
+                  ${i === currentPage ? 'disabled' : ''}>
+            ${i}
+          </button>
+        `;
+      }
+
+      const pagerHTML = `
+        ${pageSizeHTML}
+        <div class="e-pagercontainer">
+          <div class="e-pagerinfo">
+            Hiển thị <strong>${start}</strong> đến <strong>${end}</strong> trong tổng số <strong>${total}</strong> mục
+          </div>
+          <div class="e-pagernav">
+            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">
+              <i class="bi bi-chevron-bar-left"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            ${pagesHTML}
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Trang sau">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Trang cuối">
+              <i class="bi bi-chevron-bar-right"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      pagination.innerHTML = pagerHTML;
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      loadJDs();
+    }
+
+    function changePageSize(size) {
+      currentLimit = parseInt(size);
+      currentPage = 1;
+      loadJDs();
+    }
+
+    async function deleteJD(name) {
+      if (!confirm(`Xóa JD: ${name}?`)) return;
+      await fetch(`/jds/${encodeURIComponent(name)}`, {method: 'DELETE'});
+      loadJDs();
+    }
+
+    function formatSize(bytes) {
+      return (bytes / 1024).toFixed(1) + ' KB';
+    }
+
+    function formatDate(timestamp) {
+      return new Date(timestamp * 1000).toLocaleDateString('vi-VN');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentSearch = e.target.value;
+      currentPage = 1;
+      loadJDs();
+    });
+
+    // Close modal on outside click
+    document.getElementById('uploadModal').addEventListener('click', (e) => {
+      if (e.target.id === 'uploadModal') closeUploadModal();
+    });
+
+    loadJDs();
+  </script>
+  <script src="/assets/js/settings.js?v=2"></script>
+</body>
+</html>
