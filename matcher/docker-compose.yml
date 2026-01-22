@@ -2,6 +2,7 @@ services:
   web:
     build: .
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    working_dir: /app
     volumes:
       - .:/app
     ports:
@@ -22,12 +23,14 @@ services:
   worker:
     build: .
     command: rq worker default --url redis://:MatKhau2026@redis:6379
+    working_dir: /app
     volumes:
       - .:/app
     depends_on:
       - redis
       - postgres
     environment:
+      - PYTHONPATH=/app
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=MatKhau2026
@@ -41,7 +44,7 @@ services:
     image: redis:alpine
     command: redis-server --requirepass MatKhau2026
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
 
@@ -52,7 +55,7 @@ services:
       - POSTGRES_USER=anhld
       - POSTGRES_PASSWORD=MatKhau2026
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

@@ -26,7 +26,7 @@ class DeepSeekProvider(AIProvider):
         except:
             return False
 
-    async def evaluate(self, jd_text: str, cv_text: str) -> Dict[str, Any]:
+    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
         """Evaluate using DeepSeek"""
         api_key = self.config.get('api_key', '')
         model = self.config.get('model', 'deepseek-chat')
@@ -38,10 +38,17 @@ class DeepSeekProvider(AIProvider):
         jd_truncated = jd_text[:4000] if len(jd_text) > 4000 else jd_text
         cv_truncated = cv_text[:6000] if len(cv_text) > 6000 else cv_text
 
+        criteria_text = ""
+        if criteria and len(criteria) > 0:
+            tags_str = "\n".join([f"- {t}" for t in criteria])
+            criteria_text = f"\nKEY CRITERIA / TAGS (MUST HAVE):\n{tags_str}\n\nIMPORTANT: Use these criteria to filter candidates. If they miss critical criteria, penalize the score."
+
         prompt = f"""You are an expert HR recruiter. Analyze the following CV against the Job Description and provide an evaluation.
 
 JOB DESCRIPTION:
 {jd_truncated}
+
+{criteria_text}
 
 CANDIDATE CV:
 {cv_truncated}

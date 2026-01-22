@@ -1,12 +1,12 @@
-"""HuggingFace AI Provider"""
-import requests
+"""HuggingFace AI Provider using OpenAI Client"""
 import json
 from typing import Dict, Any
+from openai import OpenAI
 from .base import AIProvider
 
 
 class HuggingFaceProvider(AIProvider):
-    """HuggingFace Inference API provider"""
+    """HuggingFace Inference API provider using OpenAI-compatible client"""
 
     @property
     def name(self) -> str:
@@ -19,28 +19,26 @@ class HuggingFaceProvider(AIProvider):
             if not api_key:
                 return False
 
-            # Test with OpenAI-compatible chat completions endpoint
-            model = self.config.get('model', 'mistralai/Mistral-7B-Instruct-v0.3')
-            url = "https://router.huggingface.co/v1/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
-            }
-            payload = {
-                "model": model,
-                "messages": [{"role": "user", "content": "Hi"}],
-                "max_tokens": 5
-            }
-            response = requests.post(url, headers=headers, json=payload, timeout=10)
-            return response.status_code == 200
+            client = OpenAI(
+                base_url="https://router.huggingface.co/v1",
+                api_key=api_key
+            )
+            
+            model = self.config.get('model', 'deepseek-ai/DeepSeek-V3.2-Exp:novita')
+            completion = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": "Hi"}],
+                max_tokens=5
+            )
+            return True
         except Exception as e:
             print(f"HuggingFace test connection error: {e}")
             return False
 
     async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
-        """Evaluate using HuggingFace OpenAI-compatible API"""
+        """Evaluate using HuggingFace via OpenAI client"""
         api_key = self.config.get('api_key', '')
-        model = self.config.get('model', 'mistralai/Mistral-7B-Instruct-v0.3')
+        model = self.config.get('model', 'deepseek-ai/DeepSeek-V3.2-Exp:novita')
 
         if not api_key:
             return self._get_fallback_evaluation("API key not configured")
@@ -53,9 +51,9 @@ class HuggingFaceProvider(AIProvider):
         criteria_text = ""
         if criteria and len(criteria) > 0:
             tags_str = "\n".join([f"- {t}" for t in criteria])
-            criteria_text = f"\nKEY CRITERIA / TAGS (MUST HAVE):\n{tags_str}\n\nIMPORTANT: Use these tags to filter candidates. If they miss critical tags, penalize the score."
+            criteria_text = f"\n🎯 KEY EVALUATION CRITERIA:\n{tags_str}\n\nPrioritize candidates who meet these requirements."
 
-        prompt = f"""You are a strict technical recruiter. Analyze the CV against the JD.
+        prompt = f"""You are a SUPPORTIVE recruiter looking for POTENTIAL in candidates. Evaluate this CV holistically.
 
 JOB DESCRIPTION:
 {jd_truncated}
@@ -65,64 +63,83 @@ JOB DESCRIPTION:
 CANDIDATE CV:
 {cv_truncated}
 
-EVALUATION RULES:
-1. If the candidate's core technology stack (e.g., Java vs Python, React vs Angular) does NOT match the JD, the 'technical_skills_score' MUST be between 0 and 2.
-2. If the candidate lacks the required years of experience, 'experience_score' MUST be between 0 and 4.
-3. If the candidate is irrelevant (e.g., Sales apply for Dev), the 'score' (Overall) MUST be between 0 and 2.
-4. Do NOT give high scores (4-10) for "potential" if the hard skills are missing. Be strict.
+SCORING APPROACH - Be GENEROUS and consider ALL factors:
 
-Provide output in this JSON format ONLY:
+📊 OVERALL SCORE (0-10) - Consider the WHOLE picture:
+- 8-10: Strong candidate - has most required skills OR strong transferable skills + good attitude
+- 6-7: Good potential - may lack some requirements but shows promise and learning ability
+- 4-5: Worth considering - has some relevant background, trainable
+- 2-3: Significant gaps - but might fit a junior/entry role
+- 0-1: Completely unrelated field
+
+🔧 TECHNICAL SKILLS (0-10) - Be generous with transferable skills:
+- Has required tech stack: 8-10
+- Has related/similar tech: 6-8
+- Has programming background but different stack: 5-7
+- Some technical exposure: 4-6
+
+💼 WORK EXPERIENCE (0-10) - Value ALL experience:
+- Relevant industry experience: 8-10
+- Related field experience: 6-8
+- Any professional experience: 5-7
+- Fresh graduate with projects: 4-6
+
+🤝 CULTURAL FIT (0-10) - Look for positive indicators:
+- Shows teamwork, communication, growth mindset: 7-10
+- Basic professional demeanor: 5-7
+
+💡 SOFT SKILLS (0-10) - Consider any evidence of:
+- Leadership, initiative, problem-solving, learning: 6-10
+- Communication, collaboration: 5-8
+
+⚠️ IMPORTANT RULES:
+1. START with 6/10 as baseline for anyone with relevant experience
+2. Add points for strengths, only subtract for major gaps
+3. Consider POTENTIAL, not just current skills
+4. A developer with 2 years can still score 7+ if skills align
+
+Return JSON only:
 {{
-    "score": <number 0-10, overall fit>,
-    "technical_skills_score": <number 0-10>,
-    "experience_score": <number 0-10>,
-    "culture_fit_score": <number 0-10>,
-    "soft_skills_score": <number 0-10>,
-    "strengths": "<3-5 key strengths>",
-    "weaknesses": "<critical missing skills or mismatches>",
-    "justification": "<Explain WHY the score is low/high. Check tech stack match.>",
-    "recommendation": "<RECOMMEND / CONSIDER / REJECT>"
+    "score": <0-10>,
+    "technical_skills_score": <0-10>,
+    "experience_score": <0-10>,
+    "culture_fit_score": <0-10>,
+    "soft_skills_score": <0-10>,
+    "strengths": "<what this candidate brings to the table>",
+    "weaknesses": "<gaps that can be addressed with training>",
+    "justification": "<why this score - focus on positives>",
+    "recommendation": "<RECOMMEND/CONSIDER/REJECT>"
 }}"""
 
-        # Use OpenAI-compatible endpoint
-        url = "https://router.huggingface.co/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-
         try:
-            response = requests.post(
-                url,
-                headers=headers,
-                json={
-                    "model": model,
-                    "messages": [
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": 0.3,
-                    "max_tokens": 1000
-                },
-                timeout=120
+            client = OpenAI(
+                base_url="https://router.huggingface.co/v1",
+                api_key=api_key
             )
-
-            if response.status_code == 200:
-                result = response.json()
-                try:
-                    content = result['choices'][0]['message']['content']
-                    return self._parse_response(content)
-                except (KeyError, IndexError) as e:
-                    return self._get_fallback_evaluation(f"Invalid response format: {str(e)}")
-            else:
-                return self._get_fallback_evaluation(f"API error ({response.status_code}): {response.text}")
-
+            
+            print(f"[HuggingFace] Evaluating CV ({len(cv_text)} chars) with model: {model}")
+            
+            completion = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=1500
+            )
+            
+            content = completion.choices[0].message.content
+            print(f"[HuggingFace] Response received, parsing...")
+            
+            parsed = self._parse_response(content)
+            print(f"[HuggingFace] Score: {parsed.get('score', 'N/A')}")
+            return parsed
+            
         except Exception as e:
+            print(f"[HuggingFace] Error: {str(e)}")
             return self._get_fallback_evaluation(str(e))
 
     def _parse_response(self, response_text: str) -> Dict[str, Any]:
-        """Parse HuggingFace response"""
+        """Parse response to JSON"""
         try:
-            # Try direct JSON parse
             return json.loads(response_text)
         except:
             pass
@@ -139,12 +156,16 @@ Provide output in this JSON format ONLY:
         return self._get_fallback_evaluation("Failed to parse response")
 
     def _get_fallback_evaluation(self, error_msg: str) -> Dict[str, Any]:
-        """Return fallback evaluation"""
+        """Return fallback evaluation with error info"""
         return {
-            "score": 5,
-            "strengths": "Unable to analyze - HuggingFace unavailable",
-            "weaknesses": "Unable to analyze - HuggingFace unavailable",
-            "justification": f"Automatic evaluation failed: {error_msg}",
-            "recommendation": "CONSIDER",
+            "score": 0,
+            "technical_skills_score": 0,
+            "experience_score": 0,
+            "culture_fit_score": 0,
+            "soft_skills_score": 0,
+            "strengths": "Evaluation failed",
+            "weaknesses": "Evaluation failed", 
+            "justification": f"AI evaluation error: {error_msg}",
+            "recommendation": "REJECT",
             "error": error_msg
         }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản Lý JD | Matcher</title>
+  <title>JD Management | Matcher</title>
   <link rel="stylesheet" href="/assets/css/shared.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="icon" href="/assets/favicon.ico">
@@ -115,6 +115,49 @@
     table th:last-child {
       z-index: 15;
     }
+
+    .criteria-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--gray-200);
+      border-radius: 999px;
+      background: white;
+      font-size: 0.8125rem;
+      color: var(--gray-800);
+      line-height: 1;
+    }
+
+    .criteria-chip-remove {
+      width: 1.25rem;
+      height: 1.25rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--gray-500);
+      transition: all 0.2s;
+    }
+
+    .criteria-chip-remove:hover {
+      background: var(--danger-light);
+      color: var(--danger-color);
+    }
+
+    .criteria-hint {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .criteria-input-hint {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      margin-top: 0.25rem;
+    }
   </style>
 </head>
 <body>
@@ -130,24 +173,24 @@
       <nav class="sidebar-nav">
         <a href="/" class="nav-item">
           <i class="bi bi-bar-chart"></i>
-          <span>So Sánh</span>
+          <span>Compare</span>
         </a>
         <a href="/jd-management.html" class="nav-item active">
           <i class="bi bi-file-earmark-text"></i>
-          <span>Quản Lý JD</span>
+          <span>JD Management</span>
         </a>
         <a href="/cv-management.html" class="nav-item">
           <i class="bi bi-person-badge"></i>
-          <span>Quản Lý CV</span>
+          <span>CV Management</span>
         </a>
         <a href="/history.html" class="nav-item">
           <i class="bi bi-clock-history"></i>
-          <span>Lịch Sử</span>
+          <span>History</span>
         </a>
         <div style="flex: 1;"></div>
         <a href="#" class="nav-item" onclick="openAiSettingsModal()">
           <i class="bi bi-gear"></i>
-          <span>Cấu hình AI</span>
+          <span>AI Settings</span>
         </a>
       </nav>
     </aside>
@@ -159,7 +202,7 @@
         <button class="mobile-menu-toggle" onclick="toggleSidebar()">
           <i class="bi bi-list"></i>
         </button>
-        <h1 class="header-title">Quản Lý Job Descriptions</h1>
+        <h1 class="header-title">Job Descriptions</h1>
         <div class="header-toolbar">
           <button class="btn btn-primary" onclick="openUploadModal()">
             <i class="bi bi-cloud-upload"></i>
@@ -173,7 +216,7 @@
         <!-- Search -->
         <div class="card mb-4">
           <div class="card-body">
-            <input type="text" id="searchInput" placeholder="Tìm kiếm JD..." class="form-control">
+            <input type="text" id="searchInput" placeholder="Search job descriptions..." class="form-control">
           </div>
         </div>
 
@@ -183,16 +226,16 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width: 35%;">Tên File</th>
-                  <th style="width: 15%;">Danh Mục</th>
-                  <th style="width: 15%;">Phòng Ban</th>
-                  <th style="width: 25%;">Tiêu Chí (Tags)</th>
-                  <th style="width: 15%;">Ngày Upload</th>
-                  <th class="text-right" style="width: 8%;">Thao Tác</th>
+                  <th style="width: 35%;">File Name</th>
+                  <th style="width: 15%;">Category</th>
+                  <th style="width: 15%;">Department</th>
+                  <th style="width: 25%;">Evaluation Criteria</th>
+                  <th style="width: 15%;">Last Modified</th>
+                  <th class="text-right" style="width: 8%;">Actions</th>
                 </tr>
               </thead>
               <tbody id="tableBody">
-                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Đang tải...</td></tr>
+                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -218,8 +261,8 @@
         <div id="dropZone" style="border: 2px dashed var(--gray-300); border-radius: 0.5rem; padding: 3rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s;">
           <input type="file" id="fileInput" accept=".docx" multiple style="display: none;">
           <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: var(--gray-400); display: block; margin-bottom: 1rem;"></i>
-          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Kéo thả file JD vào đây</p>
-          <p style="font-size: 0.875rem; color: var(--gray-500);">hoặc click để chọn file (.docx)</p>
+          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Drag and drop JD files here</p>
+          <p style="font-size: 0.875rem; color: var(--gray-500);">or click to select (.docx)</p>
         </div>
       </div>
     </div>
@@ -227,36 +270,38 @@
 
   <!-- Tags Modal -->
   <div id="tagsModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-content" style="max-width: 700px;">
       <div class="modal-header">
         <h3 class="modal-title" id="tagsModalTitle">
           <i class="bi bi-tags"></i>
-          Quản Lý Tiêu Chí
+          Evaluation Criteria
         </h3>
         <button class="modal-close" onclick="closeTagsModal()">
           <i class="bi bi-x"></i>
         </button>
       </div>
       <div class="modal-body">
+        <p class="criteria-hint mb-3">These criteria will be used during CV evaluation for this job description.</p>
         <div class="mb-3">
-          <label class="form-label small text-muted">Danh sách tiêu chí hiện có</label>
-          <div id="modalTagsContainer" class="d-flex flex-wrap gap-2 p-3 border rounded bg-light" style="min-height: 80px;">
+          <label class="form-label" style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">Current Criteria</label>
+          <div id="modalTagsContainer" class="d-flex flex-wrap gap-3 p-4 border rounded bg-light" style="min-height: 120px; align-content: flex-start;">
             <!-- Tags rendered here -->
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label small text-muted">Thêm tiêu chí mới</label>
+          <label class="form-label" style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">Add New Criteria</label>
           <div class="d-flex gap-2">
-            <input type="text" id="newTagInput" class="form-control" placeholder="Nhập tiêu chí và nhấn Enter...">
-            <button class="btn btn-outline-primary" onclick="addTag()">
+            <input type="text" id="newTagInput" class="form-control" placeholder="Type and press Enter (or use commas)..." style="font-size: 1rem; padding: 0.625rem 1rem;">
+            <button class="btn btn-outline-primary" onclick="addTag()" style="padding: 0.625rem 1.25rem;">
               <i class="bi bi-plus-lg"></i>
             </button>
           </div>
+          <div class="criteria-input-hint" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--gray-500);">Examples: "Python", "React", "3+ years", "AWS", "English B2"</div>
         </div>
       </div>
       <div class="modal-footer d-flex justify-content-end gap-2 pt-3 border-top">
-        <button class="btn btn-outline" onclick="closeTagsModal()">Hủy</button>
-        <button class="btn btn-primary" onclick="saveTags()">Lưu Thay Đổi</button>
+        <button class="btn btn-outline" onclick="closeTagsModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTags()">Save Changes</button>
       </div>
     </div>
   </div>
@@ -265,6 +310,48 @@
     let currentPage = 1;
     let currentLimit = 10;
     let currentSearch = '';
+    let loadRetryCount = 0;
+    const MAX_RETRIES = 3;
+
+    // Toast notification system
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? 'var(--success-color)' : type === 'error' ? 'var(--danger-color)' : 'var(--primary-color)'};
+        color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+      `;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -306,19 +393,29 @@
     async function uploadFiles(files) {
       const validFiles = files.filter(f => f.name.toLowerCase().endsWith('.docx'));
       if (validFiles.length === 0) {
-        alert('Vui lòng chọn file .docx');
+        showToast('Please select .docx files', 'error');
         return;
       }
 
+      let successCount = 0;
       for (const file of validFiles) {
         const formData = new FormData();
         formData.append('file', file);
         
         try {
-          await fetch('/jds', {method: 'POST', body: formData});
+          const response = await fetch('/jds', {method: 'POST', body: formData});
+          if (response.ok) {
+            successCount++;
+          } else {
+            throw new Error(`Upload failed: ${response.statusText}`);
+          }
         } catch (e) {
-          alert('Lỗi upload: ' + e.message);
+          showToast(`Error uploading ${file.name}: ${e.message}`, 'error');
         }
+      }
+      
+      if (successCount > 0) {
+        showToast(`Successfully uploaded ${successCount} file(s)`, 'success');
       }
       
       closeUploadModal();
@@ -329,72 +426,101 @@
     let currentTags = [];
 
     async function loadJDs() {
-      const res = await fetch(`/jds?page=${currentPage}&limit=${currentLimit}&search=${currentSearch}`);
-      const data = await res.json();
-
-      const tbody = document.getElementById('tableBody');
-
-      if (!data.items || data.items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Chưa có JD nào</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = data.items.map(jd => {
-        const tags = Array.isArray(jd.tags) ? jd.tags : [];
-        const tagsHtml = tags.length > 0
-          ? tags.map(t => `<span class="badge bg-light text-dark border me-1 mb-1 d-inline-block">${t}</span>`).join('') 
-          : '<span class="text-muted small d-inline-block mb-1 me-1">Chưa có tiêu chí</span>';
+      try {
+        const res = await fetch(`/jds?page=${currentPage}&limit=${currentLimit}&search=${currentSearch}`);
         
-        // Escape quotes for onclick
-        const jdNameSafe = jd.name.replace(/'/g, "\\'");
-        const tagsJson = JSON.stringify(tags).replace(/"/g, '&quot;');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        loadRetryCount = 0; // Reset retry count on success
 
-        return `
-        <tr>
-          <td>
-            <div class="d-flex align-items-center">
-              <i class="bi bi-file-earmark-text text-primary me-2"></i>
-              <div>
-                <div class="fw-medium">${jd.name}</div>
-                <div class="small text-muted">${formatSize(jd.size)}</div>
+        const tbody = document.getElementById('tableBody');
+
+        if (!data.items || data.items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">No job descriptions found</td></tr>';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        tbody.innerHTML = data.items.map(jd => {
+          const tags = Array.isArray(jd.tags) ? jd.tags : [];
+          const tagsHtml = tags.length > 0
+            ? tags.map(t => `<span class="badge bg-light text-dark border me-1 mb-1 d-inline-block">${t}</span>`).join('') 
+            : '<span class="text-muted small d-inline-block mb-1 me-1"></span>';
+          
+          // Escape quotes for onclick
+          const jdNameSafe = jd.name.replace(/'/g, "\\'");
+          const tagsJson = JSON.stringify(tags).replace(/"/g, '&quot;');
+
+          return `
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                <div>
+                  <div class="fw-medium">${jd.name}</div>
+                  <div class="small text-muted">${formatSize(jd.size)}</div>
+                </div>
               </div>
-            </div>
-          </td>
-          <td>
-            <div class="small text-muted mb-1">Danh mục</div>
-            <input type="text"
-                   value="${jd.category || ''}"
-                   class="form-control form-control-sm"
-                   onchange="updateMetadata('${jdNameSafe}', 'category', this.value)">
-          </td>
-          <td>
-            <div class="small text-muted mb-1">Phòng ban</div>
-            <input type="text"
-                   value="${jd.department || ''}"
-                   class="form-control form-control-sm"
-                   onchange="updateMetadata('${jdNameSafe}', 'department', this.value)">
-          </td>
-          <td style="min-width: 250px;">
-            <div class="d-flex flex-wrap align-items-center gap-1">
-              ${tagsHtml}
-              <button class="btn btn-sm btn-light border rounded-circle" 
-                      style="width: 24px; height: 24px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
-                      onclick="openTagsModal('${jdNameSafe}', ${tagsJson})"
-                      title="Chỉnh sửa tiêu chí">
-                <i class="bi bi-plus"></i>
+            </td>
+            <td>
+              <input type=\"text\"
+                     value=\"${jd.category || ''}\"
+                     class=\"form-control form-control-sm\"
+                     placeholder=\"Enter category\"
+                     onchange=\"updateMetadata('${jdNameSafe}', 'category', this.value)\">
+            </td>
+            <td>
+              <input type=\"text\"
+                     value=\"${jd.department || ''}\"
+                     class=\"form-control form-control-sm\"
+                     placeholder=\"Enter department\"
+                     onchange=\"updateMetadata('${jdNameSafe}', 'department', this.value)\">
+            </td>
+            <td style="min-width: 250px;">
+              <div class="d-flex flex-wrap align-items-center gap-1">
+                ${tagsHtml}
+                <button class="btn btn-sm btn-light border" 
+                        style="height: 24px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px;"
+                        onclick="openTagsModal('${jdNameSafe}', ${tagsJson})"
+                        title="Edit criteria">
+                  <i class="bi bi-pencil"></i>
+                  <span class="small">Edit</span>
+                </button>
+              </div>
+            </td>
+            <td class="text-muted small">${formatDate(jd.modified)}</td>
+            <td class="text-end">
+              <button onclick="deleteJD('${jdNameSafe}')" class="btn btn-sm btn-outline-danger border-0">
+                <i class="bi bi-trash"></i>
               </button>
-            </div>
-          </td>
-          <td class="text-muted small">${formatDate(jd.modified)}</td>
-          <td class="text-end">
-            <button onclick="deleteJD('${jdNameSafe}')" class="btn btn-sm btn-outline-danger border-0">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `}).join('');
+            </td>
+          </tr>
+        `}).join('');
 
-      updatePagination(data);
+        updatePagination(data);
+      } catch (error) {
+        console.error('Failed to load JDs:', error);
+        const tbody = document.getElementById('tableBody');
+        
+        if (loadRetryCount < MAX_RETRIES) {
+          loadRetryCount++;
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--warning-color);">
+            <i class="bi bi-exclamation-triangle"></i> Loading failed. Retrying (${loadRetryCount}/${MAX_RETRIES})...
+          </td></tr>`;
+          setTimeout(() => loadJDs(), 2000);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--danger-color);">
+            <i class="bi bi-x-circle"></i> Failed to load JDs: ${error.message}<br>
+            <button class="btn btn-sm btn-primary mt-2" onclick="loadRetryCount=0; loadJDs();">
+              <i class="bi bi-arrow-clockwise"></i> Retry
+            </button>
+          </td></tr>`;
+          showToast('Failed to load job descriptions. Please check your connection.', 'error');
+        }
+      }
     }
 
     // --- Tags Management ---
@@ -403,7 +529,7 @@
       currentEditingJd = jdName;
       currentTags = [...tags]; // Clone array
       renderTagsInModal();
-      document.getElementById('tagsModalTitle').textContent = `Tiêu Chí: ${jdName}`;
+      document.getElementById('tagsModalTitle').textContent = `Criteria: ${jdName}`;
       document.getElementById('newTagInput').value = '';
       document.getElementById('tagsModal').classList.add('active');
       setTimeout(() => document.getElementById('newTagInput').focus(), 100);
@@ -415,22 +541,38 @@
 
     function renderTagsInModal() {
       const container = document.getElementById('modalTagsContainer');
+      if (!currentTags || currentTags.length === 0) {
+        container.innerHTML = '<span class="text-muted small">No criteria yet. Add one below.</span>';
+        return;
+      }
+
       container.innerHTML = currentTags.map((tag, index) => `
-        <span class="badge bg-light text-dark border p-2 d-inline-flex align-items-center gap-2">
-          ${tag}
-          <i class="bi bi-x cursor-pointer text-muted hover-danger" onclick="removeTag(${index})" style="cursor: pointer;"></i>
+        <span class="criteria-chip">
+          <span>${tag}</span>
+          <span class="criteria-chip-remove" onclick="removeTag(${index})" title="Remove">
+            <i class="bi bi-x"></i>
+          </span>
         </span>
       `).join('');
     }
 
     function addTag() {
       const input = document.getElementById('newTagInput');
-      const val = input.value.trim();
-      if (val && !currentTags.includes(val)) {
-        currentTags.push(val);
-        renderTagsInModal();
-        input.value = '';
+      const raw = input.value.trim();
+      if (!raw) return;
+
+      const parts = raw
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      for (const val of parts) {
+        if (val && !currentTags.includes(val)) currentTags.push(val);
       }
+
+      renderTagsInModal();
+      input.value = '';
+      input.focus();
     }
 
     function removeTag(index) {
@@ -443,19 +585,25 @@
 
       const btn = document.querySelector('#tagsModal .btn-primary');
       const originalText = btn.textContent;
-      btn.textContent = 'Đang lưu...';
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
       btn.disabled = true;
 
       try {
-        await fetch(`/jds/${encodeURIComponent(currentEditingJd)}/metadata`, {
+        const response = await fetch(`/jds/${encodeURIComponent(currentEditingJd)}/metadata`, {
           method: 'PATCH',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({tags: currentTags})
         });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        showToast('Criteria saved successfully', 'success');
         closeTagsModal();
         loadJDs(); 
       } catch (e) {
-        alert('Lỗi cập nhật tags: ' + e.message);
+        showToast(`Error updating criteria: ${e.message}`, 'error');
       } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -478,13 +626,20 @@
         const payload = {};
         payload[field] = value || null;
 
-        await fetch(`/jds/${encodeURIComponent(jdName)}/metadata`, {
+        const response = await fetch(`/jds/${encodeURIComponent(jdName)}/metadata`, {
           method: 'PATCH',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(payload)
         });
+        
+        if (response.ok) {
+          showToast(`${field.charAt(0).toUpperCase() + field.slice(1)} updated`, 'success');
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
       } catch (e) {
         console.error('Update failed:', e);
+        showToast(`Failed to update ${field}`, 'error');
       }
     }
 
@@ -498,14 +653,14 @@
       // Build page size selector
       const pageSizeHTML = `
         <div class="e-pagesize">
-          <span>Hiển thị</span>
+          <span>Show</span>
           <select id="pageSizeSelect" onchange="changePageSize(this.value)">
             <option value="10" ${currentLimit === 10 ? 'selected' : ''}>10</option>
             <option value="20" ${currentLimit === 20 ? 'selected' : ''}>20</option>
             <option value="50" ${currentLimit === 50 ? 'selected' : ''}>50</option>
             <option value="100" ${currentLimit === 100 ? 'selected' : ''}>100</option>
           </select>
-          <span>mục/trang</span>
+          <span>items/page</span>
         </div>
       `;
 
@@ -533,20 +688,20 @@
         ${pageSizeHTML}
         <div class="e-pagercontainer">
           <div class="e-pagerinfo">
-            Hiển thị <strong>${start}</strong> đến <strong>${end}</strong> trong tổng số <strong>${total}</strong> mục
+            Showing <strong>${start}</strong> to <strong>${end}</strong> of <strong>${total}</strong> items
           </div>
           <div class="e-pagernav">
-            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">
+            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="First page">
               <i class="bi bi-chevron-bar-left"></i>
             </button>
-            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Previous page">
               <i class="bi bi-chevron-left"></i>
             </button>
             ${pagesHTML}
-            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Trang sau">
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Next page">
               <i class="bi bi-chevron-right"></i>
             </button>
-            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Trang cuối">
+            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Last page">
               <i class="bi bi-chevron-bar-right"></i>
             </button>
           </div>
@@ -568,9 +723,19 @@
     }
 
     async function deleteJD(name) {
-      if (!confirm(`Xóa JD: ${name}?`)) return;
-      await fetch(`/jds/${encodeURIComponent(name)}`, {method: 'DELETE'});
-      loadJDs();
+      if (!confirm(`Delete JD: ${name}?`)) return;
+      
+      try {
+        const response = await fetch(`/jds/${encodeURIComponent(name)}`, {method: 'DELETE'});
+        if (response.ok) {
+          showToast('JD deleted successfully', 'success');
+          loadJDs();
+        } else {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      } catch (e) {
+        showToast(`Failed to delete JD: ${e.message}`, 'error');
+      }
     }
 
     function formatSize(bytes) {
@@ -578,7 +743,7 @@
     }
 
     function formatDate(timestamp) {
-      return new Date(timestamp * 1000).toLocaleDateString('vi-VN');
+      return new Date(timestamp * 1000).toLocaleDateString('en-US');
     }
 
     document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -592,8 +757,12 @@
       if (e.target.id === 'uploadModal') closeUploadModal();
     });
 
+    document.getElementById('tagsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'tagsModal') closeTagsModal();
+    });
+
     loadJDs();
   </script>
-  <script src="/assets/js/settings.js?v=2"></script>
+  <script src="/assets/js/settings.js?v=3"></script>
 </body>
 </html>

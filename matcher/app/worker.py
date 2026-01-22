@@ -78,11 +78,11 @@ def call_ai_provider(jd_text: str, cv_text: str, criteria: list[str] = None, max
 def get_fallback_evaluation(error_msg: str) -> dict:
     """Return a fallback evaluation when AI provider fails."""
     return {
-        "score": 5,
-        "strengths": "Unable to analyze - AI provider unavailable",
-        "weaknesses": "Unable to analyze - AI provider unavailable",
-        "justification": f"Automatic evaluation failed: {error_msg}. Please review manually.",
-        "recommendation": "CONSIDER",
+        "score": 0,
+        "strengths": "EVALUATION FAILED",
+        "weaknesses": "EVALUATION FAILED",
+        "justification": f"AI evaluation failed: {error_msg}",
+        "recommendation": "REJECT",
         "error": error_msg
     }
 

@@ -134,7 +134,8 @@ def list_jds(page: int = 1, limit: int = 10, search: str = "", db: Session = Dep
             "size": f.stat().st_size,
             "modified": f.stat().st_mtime,
             "category": meta.category if meta else None,
-            "department": meta.department if meta else None
+            "department": meta.department if meta else None,
+            "tags": meta.tags if meta and meta.tags else []
         })
 
     return {
@@ -748,7 +749,20 @@ def update_jd_metadata(jd_name: str, data: JDMetadataUpdate, db: Session = Depen
 
     jd_meta = db.query(JDMetadata).filter(JDMetadata.filename == jd_name).first()
     if not jd_meta:
-        raise HTTPException(status_code=404, detail="JD not found")
+        from datetime import datetime
+
+        jd_path = JD_DIR / jd_name
+        if not jd_path.exists():
+            raise HTTPException(status_code=404, detail="JD not found")
+
+        jd_meta = JDMetadata(
+            filename=jd_name,
+            upload_date=datetime.utcnow(),
+            file_size=jd_path.stat().st_size,
+            usage_count=0
+        )
+        db.add(jd_meta)
+        db.commit()
 
     if data.category is not None:
         jd_meta.category = data.category

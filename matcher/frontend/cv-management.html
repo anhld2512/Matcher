@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản Lý CV | Matcher</title>
+  <title>CV Management | Matcher</title>
   <link rel="stylesheet" href="/assets/css/shared.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
@@ -203,24 +203,24 @@
       <nav class="sidebar-nav">
         <a href="/" class="nav-item">
           <i class="bi bi-bar-chart"></i>
-          <span>So Sánh</span>
+          <span>Compare</span>
         </a>
         <a href="/jd-management.html" class="nav-item">
           <i class="bi bi-file-earmark-text"></i>
-          <span>Quản Lý JD</span>
+          <span>JD Management</span>
         </a>
         <a href="/cv-management.html" class="nav-item active">
           <i class="bi bi-person-badge"></i>
-          <span>Quản Lý CV</span>
+          <span>CV Management</span>
         </a>
         <a href="/history.html" class="nav-item">
           <i class="bi bi-clock-history"></i>
-          <span>Lịch Sử</span>
+          <span>History</span>
         </a>
         <div style="flex: 1;"></div>
         <a href="#" class="nav-item" onclick="openAiSettingsModal()">
           <i class="bi bi-gear"></i>
-          <span>Cấu hình AI</span>
+          <span>AI Settings</span>
         </a>
       </nav>
     </aside>
@@ -232,11 +232,11 @@
         <button class="mobile-menu-toggle" onclick="toggleSidebar()">
           <i class="bi bi-list"></i>
         </button>
-        <h1 class="header-title">Quản Lý CVs</h1>
+        <h1 class="header-title">CV Management</h1>
         <div class="header-toolbar">
           <button class="btn btn-success" onclick="openUploadModal()">
             <i class="bi bi-cloud-upload"></i>
-            Tải lên CV
+            Upload CV
           </button>
         </div>
       </header>
@@ -248,12 +248,12 @@
           <div class="card-body">
             <div class="flex items-center gap-4">
               <div style="flex: 1;">
-                <input type="text" id="searchInput" placeholder="Tìm kiếm CV..." class="form-control">
+                <input type="text" id="searchInput" placeholder="Search CV..." class="form-control">
               </div>
               <select id="statusFilter" class="form-control" style="width: auto;">
-                <option value="">Tất cả trạng thái</option>
-                <option value="evaluated">Hoàn thành</option>
-                <option value="not_evaluated">-</option>
+                <option value="">All Status</option>
+                <option value="evaluated">Evaluated</option>
+                <option value="not_evaluated">Not Evaluated</option>
               </select>
             </div>
           </div>
@@ -265,16 +265,16 @@
             <table>
               <thead>
                 <tr>
-                  <th style="width: 25%;">Tên CV</th>
-                  <th style="width: 15%;">Danh Mục</th>
-                  <th style="width: 15%;">Phòng Ban</th>
-                  <th style="width: 15%;">Trạng Thái</th>
-                  <th style="width: 22%;">JDs Đã Đánh Giá</th>
-                  <th class="text-right" style="width: 8%;">Thao Tác</th>
+                  <th style="width: 25%;">CV Name</th>
+                  <th style="width: 15%;">Category</th>
+                  <th style="width: 15%;">Department</th>
+                  <th style="width: 15%;">Status</th>
+                  <th style="width: 22%;">Evaluated JDs</th>
+                  <th class="text-right" style="width: 8%;">Actions</th>
                 </tr>
               </thead>
               <tbody id="tableBody">
-                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Đang tải...</td></tr>
+                <tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -300,8 +300,8 @@
         <div id="dropZone" style="border: 2px dashed var(--gray-300); border-radius: 0.5rem; padding: 3rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s;">
           <input type="file" id="fileInput" accept=".pdf,.docx" multiple style="display: none;">
           <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: var(--gray-400); display: block; margin-bottom: 1rem;"></i>
-          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Kéo thả CVs vào đây</p>
-          <p style="font-size: 0.875rem; color: var(--gray-500);">hoặc click để chọn files (.pdf, .docx)</p>
+          <p style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem;">Drag and drop CVs here</p>
+          <p style="font-size: 0.875rem; color: var(--gray-500);">or click to select files (.pdf, .docx)</p>
         </div>
       </div>
     </div>
@@ -313,7 +313,7 @@
       <div class="modal-header">
         <h3 class="modal-title">
           <i class="bi bi-clock-history"></i>
-          Lịch Sử Đánh Giá: <span id="modalCVName"></span>
+          History Đánh Giá: <span id="modalCVName"></span>
         </h3>
         <button class="modal-close" onclick="closeHistoryModal()">
           <i class="bi bi-x"></i>
@@ -330,13 +330,13 @@
           </div>
           <div class="card">
             <div class="card-body text-center">
-              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Điểm Cao Nhất</p>
+              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Highest Score</p>
               <p id="modalBest" style="font-size: 1.5rem; font-weight: 700; color: var(--success-color); margin: 0;">-</p>
             </div>
           </div>
           <div class="card">
             <div class="card-body text-center">
-              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Điểm Trung Bình</p>
+              <p style="font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">Average Score</p>
               <p id="modalAvg" style="font-size: 1.5rem; font-weight: 700; color: var(--warning-color); margin: 0;">-</p>
             </div>
           </div>
@@ -344,7 +344,7 @@
 
         <!-- History List -->
         <div id="historyList">
-          <p class="text-center" style="color: var(--gray-400); padding: 2rem;">Đang tải...</p>
+          <p class="text-center" style="color: var(--gray-400); padding: 2rem;">Loading...</p>
         </div>
       </div>
     </div>
@@ -375,14 +375,14 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
             <div class="card" style="background: linear-gradient(135deg, #10b981, #059669);">
               <div class="card-body text-center" style="color: white;">
-                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Điểm Cao Nhất</p>
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Highest Score</p>
                 <p id="analysisBestScore" style="font-size: 2.5rem; font-weight: 700; margin: 0;">-</p>
-                <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Trên tổng số 10</p>
+                <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Out of 10</p>
               </div>
             </div>
             <div class="card" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
               <div class="card-body text-center" style="color: white;">
-                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Điểm Trung Bình</p>
+                <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Average Score</p>
                 <p id="analysisAvgScore" style="font-size: 2.5rem; font-weight: 700; margin: 0;">-</p>
                 <p style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.5rem;">Qua <span id="analysisTotalEvals">0</span> đánh giá</p>
               </div>
@@ -402,7 +402,7 @@
               <div class="card-header" style="background: #d1fae5; border-bottom: 2px solid var(--success-color);">
                 <h4 style="margin: 0; color: var(--success-color); font-size: 1rem; font-weight: 600;">
                   <i class="bi bi-check-circle-fill"></i>
-                  Điểm Mạnh Nổi Bật
+                  Key Strengths
                 </h4>
               </div>
               <div class="card-body">
@@ -413,7 +413,7 @@
               <div class="card-header" style="background: #fef3c7; border-bottom: 2px solid var(--warning-color);">
                 <h4 style="margin: 0; color: var(--warning-color); font-size: 1rem; font-weight: 600;">
                   <i class="bi bi-exclamation-triangle-fill"></i>
-                  Điểm Cần Cải Thiện
+                  Areas for Improvement
                 </h4>
               </div>
               <div class="card-body">
@@ -435,7 +435,7 @@
                 <div>
                   <h5 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.75rem;">
                     <i class="bi bi-star-fill" style="color: var(--warning-color);"></i>
-                    Điểm Nổi Bật So Với Thị Trường
+                    Market Highlights
                   </h5>
                   <div id="analysisMarketHighlights" style="padding: 1rem; background: var(--gray-50); border-radius: 0.5rem; line-height: 1.8;"></div>
                 </div>
@@ -462,7 +462,7 @@
             <div class="card-header" style="background: var(--gray-50);">
               <h4 style="margin: 0; color: var(--gray-700); font-size: 1.125rem; font-weight: 600;">
                 <i class="bi bi-clock-history"></i>
-                Lịch Sử Đánh Giá Chi Tiết
+                History Đánh Giá Chi Tiết
               </h4>
             </div>
             <div class="card-body">
@@ -501,9 +501,9 @@
           <input type="tel" id="contactPhone" class="form-control" placeholder="0123456789">
         </div>
         <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
-          <button class="btn btn-outline" onclick="closeContactModal()">Hủy</button>
+          <button class="btn btn-outline" onclick="closeContactModal()">Cancel</button>
           <button class="btn btn-primary" onclick="saveContactInfo()">
-            <i class="bi bi-check"></i> Lưu
+            <i class="bi bi-check"></i> Save
           </button>
         </div>
       </div>
@@ -592,7 +592,7 @@
         const data = await res.json();
 
         if (data.total === 0) {
-          document.getElementById('analysisLoading').innerHTML = '<p class="text-center" style="color: var(--gray-600); padding: 2rem;">Chưa có dữ liệu đánh giá cho CV này.</p>';
+          document.getElementById('analysisLoading').innerHTML = '<p class="text-center" style="color: var(--gray-600); padding: 2rem;">N/A dữ liệu đánh giá cho CV này.</p>';
           return;
         }
 
@@ -639,7 +639,7 @@
             Array.from(allStrengths).map(s => `<li style="margin-bottom: 0.5rem;">${s}</li>`).join('') +
             '</ul>';
         } else {
-          document.getElementById('analysisStrengths').innerHTML = '<p style="color: var(--gray-500);">Chưa có dữ liệu</p>';
+          document.getElementById('analysisStrengths').innerHTML = '<p style="color: var(--gray-500);">N/A dữ liệu</p>';
         }
 
         // Display weaknesses
@@ -648,7 +648,7 @@
             Array.from(allWeaknesses).map(s => `<li style="margin-bottom: 0.5rem;">${s}</li>`).join('') +
             '</ul>';
         } else {
-          document.getElementById('analysisWeaknesses').innerHTML = '<p style="color: var(--gray-500);">Chưa có dữ liệu</p>';
+          document.getElementById('analysisWeaknesses').innerHTML = '<p style="color: var(--gray-500);">N/A dữ liệu</p>';
         }
 
         // Market analysis (placeholder - will be enhanced with backend support)
@@ -684,19 +684,19 @@
       } else if (avgScore >= 6) {
         highlights = `
           <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
-            <li>Ứng viên có điểm đánh giá tốt (${avgScore}/10)</li>
-            <li>Thuộc nhóm ứng viên middle level</li>
-            <li>Có tiềm năng phát triển trong các vị trí chuyên môn</li>
-            <li>Cần tăng cường thêm kỹ năng để cạnh tranh ở vị trí senior</li>
+            <li>Candidate has good evaluation score (${avgScore}/10)</li>
+            <li>Belongs to middle level candidate group</li>
+            <li>Has development potential in specialized positions</li>
+            <li>Needs to strengthen skills to compete for senior positions</li>
           </ul>
         `;
       } else {
         highlights = `
           <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
-            <li>Ứng viên đang ở giai đoạn phát triển (${avgScore}/10)</li>
-            <li>Phù hợp với các vị trí junior hoặc entry-level</li>
-            <li>Cần đầu tư thêm vào đào tạo và phát triển kỹ năng</li>
-            <li>Có tiềm năng tăng trưởng nếu được đào tạo đúng hướng</li>
+            <li>Candidate is in development stage (${avgScore}/10)</li>
+            <li>Suitable for junior or entry-level positions</li>
+            <li>Requires additional investment in training and skill development</li>
+            <li>Has growth potential if trained properly</li>
           </ul>
         `;
       }
@@ -811,7 +811,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
                   <div>
                     <p style="font-size: 0.75rem; font-weight: 600; color: var(--success-color); margin: 0 0 0.5rem 0;">
-                      <i class="bi bi-check-circle"></i> Điểm mạnh
+                      <i class="bi bi-check-circle"></i> Strengths
                     </p>
                     <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0; white-space: pre-line; line-height: 1.6;">
                       ${detail.details.strengths?.substring(0, 200) || 'Không có'}${detail.details.strengths?.length > 200 ? '...' : ''}
@@ -819,7 +819,7 @@
                   </div>
                   <div>
                     <p style="font-size: 0.75rem; font-weight: 600; color: var(--warning-color); margin: 0 0 0.5rem 0;">
-                      <i class="bi bi-exclamation-triangle"></i> Điểm yếu
+                      <i class="bi bi-exclamation-triangle"></i> Weaknesses
                     </p>
                     <p style="font-size: 0.875rem; color: var(--gray-600); margin: 0; white-space: pre-line; line-height: 1.6;">
                       ${detail.details.weaknesses?.substring(0, 200) || 'Không có'}${detail.details.weaknesses?.length > 200 ? '...' : ''}
@@ -838,7 +838,7 @@
         `;
       }).join('');
 
-      document.getElementById('analysisEvaluationList').innerHTML = html || '<p style="color: var(--gray-500); text-align: center; padding: 2rem;">Chưa có đánh giá nào</p>';
+      document.getElementById('analysisEvaluationList').innerHTML = html || '<p style="color: var(--gray-500); text-align: center; padding: 2rem;">N/A đánh giá nào</p>';
     }
 
     const dropZone = document.getElementById('dropZone');
@@ -872,7 +872,7 @@
       );
       
       if (validFiles.length === 0) {
-        alert('Vui lòng chọn file .pdf hoặc .docx');
+        alert('Please select .pdf or .docx files');
         return;
       }
 
@@ -902,7 +902,7 @@
       const tbody = document.getElementById('tableBody');
 
       if (!data.items || data.items.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">Chưa có CV nào</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: var(--gray-400);">No CVs available</td></tr>';
         updatePagination(data);
         return;
       }
@@ -930,24 +930,24 @@
                   <button onclick="openContactModal('${cv.name}', '${cv.email || ''}', '${cv.phone || ''}')"
                           class="btn btn-outline"
                           style="padding: 0.25rem 0.5rem; margin-left: auto; font-size: 0.75rem;"
-                          title="Cập nhật thông tin liên hệ">
+                          title="Update contact information">
                     <i class="bi bi-pencil"></i>
                   </button>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--gray-600);">
                   <i class="bi bi-envelope"></i>
-                  <span>${cv.email || 'Chưa có email'}</span>
+                  <span>${cv.email || 'No email'}</span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--gray-600);">
                   <i class="bi bi-telephone"></i>
-                  <span>${cv.phone || 'Chưa có SĐT'}</span>
+                  <span>${cv.phone || 'No phone'}</span>
                 </div>
               </div>
             </td>
             <td>
               <input type="text"
                      value="${cv.category || ''}"
-                     placeholder="Danh mục"
+                     placeholder="Category"
                      class="form-control"
                      style="padding: 0.375rem 0.5rem; font-size: 0.875rem;"
                      onchange="updateCVMetadata('${cv.name}', 'category', this.value)">
@@ -978,22 +978,22 @@
                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${e.jd_name}</span>
                       </div>
                       <div class="jd-item-score ${e.score >= 8 ? 'score-high' : e.score >= 6 ? 'score-medium' : 'score-low'}">
-                        Điểm: ${e.score}/10
+                        Score: ${e.score}/10
                       </div>
                     </div>
                   `).join('')}
                   ${stats.total > 3 ? `<small style="color: var(--gray-500);">+${stats.total - 3} JDs khác</small>` : ''}
                 </div>
-              ` : '<span style="color: var(--gray-400); font-size: 0.75rem;">Chưa có</span>'}
+              ` : '<span style="color: var(--gray-400); font-size: 0.75rem;">N/A</span>'}
             </td>
             <td class="text-right">
               <div style="display: flex; gap: 0.25rem; justify-content: flex-end;">
                 ${hasEvals ? `
-                  <button onclick="showDetailedAnalysis('${cv.name}')" class="btn btn-primary" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" title="Xem phân tích chi tiết">
+                  <button onclick="showDetailedAnalysis('${cv.name}')" class="btn btn-primary" style="padding: 0.375rem 0.75rem; font-size: 0.875rem;" title="View detailed analysis">
                     <i class="bi bi-graph-up"></i>
                   </button>
                 ` : ''}
-                <button onclick="deleteCV('${cv.name}')" class="btn btn-outline" style="padding: 0.375rem 0.75rem; color: var(--danger-color);" title="Xóa CV">
+                <button onclick="deleteCV('${cv.name}')" class="btn btn-outline" style="padding: 0.375rem 0.75rem; color: var(--danger-color);" title="Delete CV">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -1008,7 +1008,7 @@
     async function showHistory(cvName) {
       document.getElementById('historyModal').classList.add('active');
       document.getElementById('modalCVName').textContent = cvName;
-      document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">Đang tải...</p>';
+      document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">Loading...</p>';
 
       const res = await fetch(`/cvs/${encodeURIComponent(cvName)}/evaluations`);
       const data = await res.json();
@@ -1020,7 +1020,7 @@
 
       // Render history
       if (data.evaluations.length === 0) {
-        document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">Chưa có lịch sử đánh giá</p>';
+        document.getElementById('historyList').innerHTML = '<p class="text-center" style="color: var(--gray-400); padding: 2rem;">N/A lịch sử đánh giá</p>';
         return;
       }
 
@@ -1058,14 +1058,14 @@
       // Build page size selector
       const pageSizeHTML = `
         <div class="e-pagesize">
-          <span>Hiển thị</span>
+          <span>Show</span>
           <select id="pageSizeSelect" onchange="changePageSize(this.value)">
             <option value="10" ${currentLimit === 10 ? 'selected' : ''}>10</option>
             <option value="20" ${currentLimit === 20 ? 'selected' : ''}>20</option>
             <option value="50" ${currentLimit === 50 ? 'selected' : ''}>50</option>
             <option value="100" ${currentLimit === 100 ? 'selected' : ''}>100</option>
           </select>
-          <span>mục/trang</span>
+          <span>items/page</span>
         </div>
       `;
 
@@ -1093,20 +1093,20 @@
         ${pageSizeHTML}
         <div class="e-pagercontainer">
           <div class="e-pagerinfo">
-            Hiển thị <strong>${start}</strong> đến <strong>${end}</strong> trong tổng số <strong>${total}</strong> mục
+            Showing <strong>${start}</strong> to <strong>${end}</strong> of <strong>${total}</strong> items
           </div>
           <div class="e-pagernav">
-            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">
+            <button class="e-pagerbutton" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="First page">
               <i class="bi bi-chevron-bar-left"></i>
             </button>
-            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Previous page">
               <i class="bi bi-chevron-left"></i>
             </button>
             ${pagesHTML}
-            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Trang sau">
+            <button class="e-pagerbutton" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''} title="Next page">
               <i class="bi bi-chevron-right"></i>
             </button>
-            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Trang cuối">
+            <button class="e-pagerbutton" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''} title="Last page">
               <i class="bi bi-chevron-bar-right"></i>
             </button>
           </div>
@@ -1128,7 +1128,7 @@
     }
 
     async function deleteCV(name) {
-      if (!confirm(`Xóa CV: ${name}?`)) return;
+      if (!confirm(`Delete CV: ${name}?`)) return;
       await fetch(`/cvs/${encodeURIComponent(name)}`, {method: 'DELETE'});
       loadCVs();
     }
