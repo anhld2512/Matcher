@@ -1,6 +1,3 @@
-Tuyệt vời, để đáp ứng yêu cầu "dễ hiểu, dòng hàng rõ ràng", tôi sẽ tối ưu lại bố cục. Tôi sẽ sử dụng bảng (table) và gạch đầu dòng nhiều hơn để mắt dễ nhìn, tách biệt tiếng Anh và tiếng Việt rõ ràng.
-
-Dưới đây là phiên bản README.md mới:
 
 🎯 Matcher Application
 Automated CV Screening with AI – Supports Ollama, Gemini, ChatGPT, DeepSeek, HuggingFace.
