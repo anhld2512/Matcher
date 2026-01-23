@@ -17,7 +17,7 @@ CV_DIR = BASE_DIR / "cv"
 REPORT_DIR = BASE_DIR / "reports"
 
 
-def call_ai_provider(jd_text: str, cv_text: str, criteria: list[str] = None, max_retries: int = 3) -> dict:
+def call_ai_provider(jd_text: str, cv_text: str, criteria: list[str] = None, custom_prompt: str = None, max_retries: int = 3) -> dict:
     """
     Call configured AI provider to evaluate CV against JD.
     Returns structured evaluation with score, strengths, weaknesses.
@@ -51,7 +51,7 @@ def call_ai_provider(jd_text: str, cv_text: str, criteria: list[str] = None, max
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                evaluation = loop.run_until_complete(provider.evaluate(jd_text, cv_text, criteria=criteria))
+                evaluation = loop.run_until_complete(provider.evaluate(jd_text, cv_text, criteria=criteria, custom_prompt=custom_prompt))
 
                 # Check if evaluation has error
                 if "error" not in evaluation or evaluation["error"] is None:
@@ -87,7 +87,7 @@ def get_fallback_evaluation(error_msg: str) -> dict:
     }
 
 
-def process_evaluation(jd_name: str, cv_names: list[str]) -> dict:
+def process_evaluation(jd_name: str, cv_names: list[str], custom_prompt: str = None) -> dict:
     """
     Background task to process the evaluation.
     1. Extract text from JD and CVs
@@ -201,7 +201,7 @@ def process_evaluation(jd_name: str, cv_names: list[str]) -> dict:
             db.commit()
 
             # Call AI provider for evaluation
-            ai_evaluation = call_ai_provider(jd_text, cv_text, criteria=criteria)
+            ai_evaluation = call_ai_provider(jd_text, cv_text, criteria=criteria, custom_prompt=custom_prompt)
 
             # Extract results
             score = ai_evaluation.get("score", 5)

@@ -26,7 +26,7 @@ class ChatGPTProvider(AIProvider):
         except:
             return False
 
-    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
+    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Evaluate using ChatGPT"""
         api_key = self.config.get('api_key', '')
         model = self.config.get('model', 'gpt-3.5-turbo')
@@ -42,6 +42,10 @@ class ChatGPTProvider(AIProvider):
         if criteria and len(criteria) > 0:
             tags_str = "\n".join([f"- {t}" for t in criteria])
             criteria_text = f"\nKEY CRITERIA / TAGS (MUST HAVE):\n{tags_str}\n\nIMPORTANT: Use these criteria to filter candidates. If they miss critical criteria, penalize the score."
+        
+        # Add custom prompt if provided
+        if custom_prompt and custom_prompt.strip():
+            criteria_text += f"\n\nADDITIONAL REQUIREMENTS FROM RECRUITER:\n{custom_prompt.strip()}\n\nPlease carefully consider these additional requirements in your evaluation."
 
         prompt = f"""You are an expert HR recruiter. Analyze the following CV against the Job Description and provide an evaluation.
 

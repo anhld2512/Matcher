@@ -25,7 +25,7 @@ class GeminiProvider(AIProvider):
         except:
             return False
 
-    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
+    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Evaluate using Gemini"""
         api_key = self.config.get('api_key', '')
         model = self.config.get('model', 'gemini-1.5-flash')
@@ -42,6 +42,10 @@ class GeminiProvider(AIProvider):
         if criteria and len(criteria) > 0:
             tags_str = "\n".join([f"- {t}" for t in criteria])
             criteria_text = f"\nKEY CRITERIA / TAGS (MUST HAVE):\n{tags_str}\n\nIMPORTANT: Use these tags to filter candidates. If they miss critical tags, penalize the score."
+        
+        # Add custom prompt if provided
+        if custom_prompt and custom_prompt.strip():
+            criteria_text += f"\n\nADDITIONAL REQUIREMENTS FROM RECRUITER:\n{custom_prompt.strip()}\n\nPlease carefully consider these additional requirements in your evaluation."
 
         prompt = f"""You are a strict technical recruiter. Analyze the CV against the JD.
 

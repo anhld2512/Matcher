@@ -3,160 +3,241 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Evaluation History | Matcher</title>
+  <title>History | Matcher</title>
   <link rel="stylesheet" href="/assets/css/shared.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
-    
-    .eval-card {
-      border: 1px solid var(--gray-200);
-      border-radius: 0.5rem;
-      padding: 1.25rem;
-      transition: all 0.2s;
-      border-left: 4px solid var(--gray-300);
-    }
-    
-    .eval-card:hover {
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      transform: translateY(-2px);
-    }
-    
-    .eval-card.excellent { border-left-color: var(--success-color); }
-    .eval-card.good { border-left-color: var(--warning-color); }
-    .eval-card.poor { border-left-color: var(--danger-color); }
-    
-    .score-circle {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
+    /* Clean Filter Bar */
+    .filter-bar {
       display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
       align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: white;
-    }
-    
-    .group-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 0.5rem;
-      margin: 1.5rem 0 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
 
-    .e-gridpager {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--gray-200);
+    .filter-bar input,
+    .filter-bar select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 0.8125rem;
       background: white;
     }
 
-    .e-pagerinfo {
-      font-size: 0.875rem;
-      color: var(--gray-600);
+    .filter-bar input:focus,
+    .filter-bar select:focus {
+      outline: none;
+      border-color: var(--gray-900);
     }
 
-    .e-pagercontainer {
+    .filter-bar input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    /* Evaluation List */
+    .eval-list {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 0.5rem;
     }
 
-    .e-pagernav {
+    .eval-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      transition: border-color 0.15s;
+    }
+
+    .eval-item:hover {
+      border-color: var(--gray-400);
+    }
+
+    .eval-score {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .eval-score.high { background: #dcfce7; color: #16a34a; }
+    .eval-score.medium { background: #fef3c7; color: #ca8a04; }
+    .eval-score.low { background: #fee2e2; color: #dc2626; }
+
+    .eval-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .eval-cv {
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 0.25rem;
+    }
+
+    .eval-jd {
+      font-size: 0.8125rem;
+      color: var(--gray-600);
+    }
+
+    .eval-meta {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .eval-tag {
+      padding: 0.125rem 0.5rem;
+      background: var(--gray-100);
+      border-radius: 4px;
+      font-size: 0.6875rem;
+      color: var(--gray-600);
+    }
+
+    .eval-actions {
+      flex-shrink: 0;
+    }
+
+    .eval-actions a {
+      padding: 0.5rem 1rem;
+      background: var(--gray-100);
+      border-radius: 6px;
+      color: var(--gray-700);
+      font-size: 0.8125rem;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .eval-actions a:hover {
+      background: var(--gray-200);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--gray-400);
+    }
+
+    .empty-state i {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-top: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      border-radius: 0 0 6px 6px;
+    }
+
+    .pagination-info {
+      font-size: 0.8125rem;
+      color: var(--gray-600);
+    }
+
+    .pagination-nav {
       display: flex;
       gap: 0.25rem;
     }
 
-    .e-pagerbutton {
+    .pagination-btn {
       min-width: 2rem;
       height: 2rem;
       padding: 0 0.5rem;
       border: 1px solid var(--gray-300);
       background: white;
-      border-radius: 0.25rem;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       color: var(--gray-700);
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
-    .e-pagerbutton:hover:not(:disabled) {
-      background: var(--gray-50);
-      border-color: var(--primary-color);
-      color: var(--primary-color);
+    .pagination-btn:hover:not(:disabled) {
+      background: var(--gray-100);
     }
 
-    .e-pagerbutton.e-currentitem {
-      background: var(--primary-color);
+    .pagination-btn.active {
+      background: var(--gray-900);
       color: white;
-      border-color: var(--primary-color);
-      font-weight: 600;
+      border-color: var(--gray-900);
     }
 
-    .e-pagerbutton:disabled {
-      opacity: 0.5;
+    .pagination-btn:disabled {
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
-    .e-pagesize {
+    /* Group Header */
+    .group-header {
+      padding: 0.75rem 1rem;
+      background: var(--gray-100);
+      border-radius: 6px;
+      margin: 1.5rem 0 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
+      justify-content: space-between;
+    }
+
+    .group-header:first-child {
+      margin-top: 0;
+    }
+
+    .group-title {
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .group-count {
+      font-size: 0.75rem;
       color: var(--gray-600);
     }
 
-    .e-pagesize select {
-      padding: 0.375rem 0.5rem;
-      border: 1px solid var(--gray-300);
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
-      cursor: pointer;
+    /* Stats Modal */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
     }
 
-    .table-container {
-      overflow-x: auto;
-      position: relative;
+    .stat-card {
+      padding: 1.5rem;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      text-align: center;
     }
 
-    table {
-      min-width: 900px;
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gray-900);
     }
 
-    table th {
-      white-space: nowrap;
-      background: white;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gray-600);
+      margin-top: 0.25rem;
     }
 
-    table th:last-child,
-    table td:last-child {
-      position: sticky;
-      right: 0;
-      background: white;
-      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.05);
-      z-index: 5;
-    }
-
-    table th:last-child {
-      z-index: 15;
-    }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -201,19 +282,13 @@
         <button class="mobile-menu-toggle" onclick="toggleSidebar()">
           <i class="bi bi-list"></i>
         </button>
-        <h1 class="header-title">Evaluation History</h1>
+        <h1 class="header-title">History</h1>
         <div class="header-toolbar">
-          <button class="btn btn-primary" onclick="openStatsModal()">
-            <i class="bi bi-bar-chart-fill"></i>
-            <span>Statistics</span>
+          <button class="btn btn-outline" onclick="openStatsModal()">
+            <i class="bi bi-bar-chart"></i>
           </button>
-          <select id="viewMode" class="form-control" style="width: auto;" onchange="changeViewMode()">
-            <option value="card">Card View</option>
-            <option value="table">Table View</option>
-          </select>
           <button class="btn btn-outline" onclick="loadHistory()">
             <i class="bi bi-arrow-clockwise"></i>
-            Refresh
           </button>
         </div>
       </header>
@@ -221,41 +296,31 @@
       <!-- Content -->
       <main class="content">
         <!-- Filters -->
-        <div class="card mb-4">
-          <div class="card-body">
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem;">
-              <input type="text" id="searchAll" placeholder="Search CV or JD..." class="form-control" oninput="applyFilters()">
-              <select id="categoryFilter" class="form-control" onchange="applyFilters()">
-                <option value="">Category</option>
-              </select>
-              <select id="departmentFilter" class="form-control" onchange="applyFilters()">
-                <option value="">Department</option>
-              </select>
-              <select id="scoreFilter" class="form-control" onchange="applyFilters()">
-                <option value="">Score</option>
-                <option value="8-10">8-10 (Excellent)</option>
-                <option value="6-8">6-8 (Good)</option>
-                <option value="4-6">4-6 (Average)</option>
-                <option value="0-4">0-4 (Poor)</option>
-              </select>
-              <select id="groupBy" class="form-control" onchange="applyFilters()">
-                <option value="">Group by</option>
-                <option value="jd">JD</option>
-                <option value="cv">CV</option>
-                <option value="category">Category</option>
-                <option value="department">Department</option>
-                <option value="date">Date</option>
-              </select>
-            </div>
-          </div>
+        <div class="filter-bar" style="margin-bottom: 1.5rem;">
+          <input type="text" id="searchAll" placeholder="Search CV or JD..." oninput="applyFilters()">
+          <select id="scoreFilter" onchange="applyFilters()">
+            <option value="">All Scores</option>
+            <option value="8-10">8-10 (Excellent)</option>
+            <option value="6-8">6-8 (Good)</option>
+            <option value="0-6">0-6 (Below)</option>
+          </select>
+          <select id="groupBy" onchange="applyFilters()">
+            <option value="">No Grouping</option>
+            <option value="jd">By JD</option>
+            <option value="cv">By CV</option>
+            <option value="date">By Date</option>
+          </select>
         </div>
 
         <!-- Results -->
-        <div id="resultsContainer">
-          <div class="text-center" style="padding: 3rem; color: var(--gray-400);">
-            <i class="bi bi-hourglass-split" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-            Loading data...
+        <div class="card">
+          <div id="resultsContainer" style="padding: 0.5rem;">
+            <div class="empty-state">
+              <i class="bi bi-hourglass"></i>
+              <p>Loading...</p>
+            </div>
           </div>
+          <div id="paginationContainer" class="pagination hidden"></div>
         </div>
       </main>
     </div>
@@ -263,43 +328,32 @@
 
   <!-- Stats Modal -->
   <div id="statsModal" class="modal">
-    <div class="modal-content" style="max-width: 800px;">
-      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), #6366f1); color: white;">
-        <h3 class="modal-title" style="color: white;">
-          <i class="bi bi-bar-chart-fill"></i>
-          Evaluation Statistics
-        </h3>
-        <button class="modal-close" onclick="closeStatsModal()" style="color: white;">
-          <i class="bi bi-x"></i>
-        </button>
+    <div class="modal-content" style="max-width: 400px;">
+      <div style="padding: 1.25rem; border-bottom: 1px solid var(--gray-200);">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">Statistics</h3>
       </div>
-      <div class="modal-body" style="padding: 2rem;">
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-          <div class="card" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-            <div class="card-body text-center" style="color: white;">
-              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Total Evaluations</p>
-              <p id="totalEvalsModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
-            </div>
+      <div style="padding: 1.5rem;">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="totalEvalsModal">-</div>
+            <div class="stat-label">Total Evaluations</div>
           </div>
-          <div class="card" style="background: linear-gradient(135deg, var(--primary-color), #4338ca);">
-            <div class="card-body text-center" style="color: white;">
-              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Average Score</p>
-              <p id="avgScoreModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
-            </div>
+          <div class="stat-card">
+            <div class="stat-value" id="avgScoreModal">-</div>
+            <div class="stat-label">Avg Score</div>
           </div>
-          <div class="card" style="background: linear-gradient(135deg, var(--success-color), #059669);">
-            <div class="card-body text-center" style="color: white;">
-              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Excellent (≥8)</p>
-              <p id="excellentCountModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
-            </div>
+          <div class="stat-card">
+            <div class="stat-value" id="excellentCountModal">-</div>
+            <div class="stat-label">Excellent (≥8)</div>
           </div>
-          <div class="card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-            <div class="card-body text-center" style="color: white;">
-              <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Today</p>
-              <p id="todayCountModal" style="font-size: 3rem; font-weight: 700; margin: 0;">-</p>
-            </div>
+          <div class="stat-card">
+            <div class="stat-value" id="todayCountModal">-</div>
+            <div class="stat-label">Today</div>
           </div>
         </div>
+      </div>
+      <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--gray-200); text-align: right;">
+        <button class="btn btn-outline" onclick="closeStatsModal()">Close</button>
       </div>
     </div>
   </div>
@@ -307,10 +361,9 @@
   <script>
     let allEvaluations = [];
     let filteredEvaluations = [];
-    let currentViewMode = 'card';
     let statsData = null;
-    let currentTablePage = 1;
-    let currentTableLimit = 10;
+    let currentPage = 1;
+    let pageSize = 20;
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('active');
@@ -330,313 +383,179 @@
       document.getElementById('statsModal').classList.remove('active');
     }
 
-    function changeViewMode() {
-      currentViewMode = document.getElementById('viewMode').value;
-      renderResults();
+    // Normalize Vietnamese text for search (remove diacritics)
+    function normalizeVietnamese(str) {
+      return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
     }
 
     async function loadHistory() {
       try {
         const res = await fetch('/evaluations');
         const data = await res.json();
-        
         allEvaluations = data.items || [];
         statsData = data.stats;
-        
-        await loadFilters();
         applyFilters();
       } catch (e) {
-        console.error('Error loading history:', e);
         document.getElementById('resultsContainer').innerHTML = `
-          <div class="text-center" style="padding: 3rem; color: var(--danger-color);">
-            <i class="bi bi-exclamation-triangle" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-            Error loading data: ${e.message}
+          <div class="empty-state">
+            <i class="bi bi-exclamation-triangle"></i>
+            <p>Error loading data</p>
           </div>
         `;
       }
     }
 
-    async function loadFilters() {
-      try {
-        const [catRes, deptRes] = await Promise.all([
-          fetch('/categories'),
-          fetch('/departments')
-        ]);
-        
-        const categories = await catRes.json();
-        const departments = await deptRes.json();
-        
-        const catSelect = document.getElementById('categoryFilter');
-        categories.categories.forEach(cat => {
-          const opt = document.createElement('option');
-          opt.value = cat;
-          opt.textContent = cat;
-          catSelect.appendChild(opt);
-        });
-        
-        const deptSelect = document.getElementById('departmentFilter');
-        departments.departments.forEach(dept => {
-          const opt = document.createElement('option');
-          opt.value = dept;
-          opt.textContent = dept;
-          deptSelect.appendChild(opt);
-        });
-      } catch (e) {
-        console.error('Error loading filters:', e);
-      }
-    }
-
     function applyFilters() {
-      const searchAll = document.getElementById('searchAll').value.toLowerCase();
-      const category = document.getElementById('categoryFilter').value;
-      const department = document.getElementById('departmentFilter').value;
+      const search = document.getElementById('searchAll').value;
+      const normalizedSearch = normalizeVietnamese(search);
       const scoreRange = document.getElementById('scoreFilter').value;
       const groupBy = document.getElementById('groupBy').value;
 
       filteredEvaluations = allEvaluations.filter(e => {
-        if (searchAll &&
-            !e.jd_name.toLowerCase().includes(searchAll) &&
-            !e.cv_name.toLowerCase().includes(searchAll)) {
+        if (normalizedSearch && 
+            !normalizeVietnamese(e.jd_name).includes(normalizedSearch) && 
+            !normalizeVietnamese(e.cv_name).includes(normalizedSearch)) {
           return false;
         }
-        if (category && e.jd_category !== category) return false;
-        if (department && e.jd_department !== department) return false;
-
         if (scoreRange && e.score !== null) {
           const [min, max] = scoreRange.split('-').map(Number);
           if (e.score < min || e.score > max) return false;
         }
-
         return true;
       });
 
-      currentTablePage = 1;
+      currentPage = 1;
       renderResults(groupBy);
     }
 
     function renderResults(groupBy = '') {
       const container = document.getElementById('resultsContainer');
-      
+      const paginationContainer = document.getElementById('paginationContainer');
+
       if (filteredEvaluations.length === 0) {
         container.innerHTML = `
-          <div class="text-center" style="padding: 3rem; color: var(--gray-400);">
-            <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-            No results found
+          <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No evaluations found</p>
           </div>
         `;
+        paginationContainer.classList.add('hidden');
         return;
       }
-      
+
       if (groupBy) {
         renderGrouped(groupBy);
-      } else if (currentViewMode === 'card') {
-        renderCardView();
+        paginationContainer.classList.add('hidden');
       } else {
-        renderTableView();
+        renderList();
+        renderPagination();
       }
     }
 
     function renderGrouped(groupBy) {
       const grouped = {};
-      
       filteredEvaluations.forEach(e => {
         let key;
         if (groupBy === 'jd') key = e.jd_name;
         else if (groupBy === 'cv') key = e.cv_name;
-        else if (groupBy === 'category') key = e.jd_category || 'Uncategorized';
-        else if (groupBy === 'department') key = e.jd_department || 'Unassigned';
-        else if (groupBy === 'date') key = new Date(e.created_at).toLocaleDateString('en-US');
-        
+        else if (groupBy === 'date') key = new Date(e.created_at).toLocaleDateString('vi-VN');
         if (!grouped[key]) grouped[key] = [];
         grouped[key].push(e);
       });
-      
+
       const container = document.getElementById('resultsContainer');
-      container.innerHTML = Object.entries(grouped).map(([key, items]) => {
-        const avgScore = (items.reduce((sum, e) => sum + (e.score || 0), 0) / items.length).toFixed(1);
-        
-        return `
-          <div class="group-header">
-            <div>
-              <h3 style="margin: 0; font-size: 1.125rem;">${key}</h3>
-              <p style="margin: 0.25rem 0 0; font-size: 0.875rem; opacity: 0.9;">${items.length} evaluations • Avg: ${avgScore}</p>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-            ${items.map(e => renderEvalCard(e)).join('')}
-          </div>
-        `;
-      }).join('');
+      container.innerHTML = Object.entries(grouped).map(([key, items]) => `
+        <div class="group-header">
+          <span class="group-title">${key}</span>
+          <span class="group-count">${items.length} evaluations</span>
+        </div>
+        <div class="eval-list">
+          ${items.map(renderEvalItem).join('')}
+        </div>
+      `).join('');
     }
 
-    function renderCardView() {
+    function renderList() {
+      const start = (currentPage - 1) * pageSize;
+      const pageItems = filteredEvaluations.slice(start, start + pageSize);
+
       const container = document.getElementById('resultsContainer');
       container.innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
-          ${filteredEvaluations.map(e => renderEvalCard(e)).join('')}
+        <div class="eval-list">
+          ${pageItems.map(renderEvalItem).join('')}
         </div>
       `;
     }
 
-    function renderEvalCard(e) {
-      const scoreClass = e.score >= 8 ? 'excellent' : e.score >= 6 ? 'good' : 'poor';
-      const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
-      
+    function renderEvalItem(e) {
+      const scoreClass = e.score >= 8 ? 'high' : e.score >= 6 ? 'medium' : 'low';
       return `
-        <div class="eval-card ${scoreClass}">
-          <div style="display: flex; align-items: start; gap: 1rem; margin-bottom: 1rem;">
-            <div class="score-circle" style="background: var(--${scoreColor}-color);">
-              ${e.score || '-'}
-            </div>
-            <div style="flex: 1;">
-              <h4 style="margin: 0 0 0.25rem; font-size: 1rem; font-weight: 600;">${e.cv_name}</h4>
-              <p style="margin: 0; font-size: 0.875rem; color: var(--gray-600);">${e.jd_name}</p>
+        <div class="eval-item">
+          <div class="eval-score ${scoreClass}">${e.score || '-'}</div>
+          <div class="eval-info">
+            <div class="eval-cv">${e.cv_name}</div>
+            <div class="eval-jd">${e.jd_name}</div>
+            <div class="eval-meta">
+              ${e.jd_category ? `<span class="eval-tag">${e.jd_category}</span>` : ''}
+              <span class="eval-tag">${new Date(e.created_at).toLocaleDateString('vi-VN')}</span>
             </div>
           </div>
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
-            ${e.jd_category ? `<span class="badge badge-info">${e.jd_category}</span>` : ''}
-            ${e.jd_department ? `<span class="badge" style="background: #8b5cf6; color: white;">${e.jd_department}</span>` : ''}
-            <span class="badge" style="background: var(--gray-200); color: var(--gray-700);">
-              <i class="bi bi-calendar"></i>
-              ${new Date(e.created_at).toLocaleDateString('en-US')}
-            </span>
+          <div class="eval-actions">
+            <a href="/report.html?id=${e.id}">View →</a>
           </div>
-          <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="width: 100%;">
-            <i class="bi bi-file-text"></i>
-            View Report
-          </a>
         </div>
       `;
     }
 
-    function renderTableView() {
-      const container = document.getElementById('resultsContainer');
-
+    function renderPagination() {
       const total = filteredEvaluations.length;
-      const pages = Math.ceil(total / currentTableLimit);
-      const start = (currentTablePage - 1) * currentTableLimit;
-      const end = Math.min(start + currentTableLimit, total);
-      const pageItems = filteredEvaluations.slice(start, end);
+      const pages = Math.ceil(total / pageSize);
+      const start = (currentPage - 1) * pageSize + 1;
+      const end = Math.min(currentPage * pageSize, total);
 
-      container.innerHTML = `
-        <div class="card">
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>CV</th>
-                  <th>JD</th>
-                  <th>Category</th>
-                  <th>Department</th>
-                  <th>Score</th>
-                  <th>Date</th>
-                  <th class="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${pageItems.map(e => {
-                  const scoreColor = e.score >= 8 ? 'success' : e.score >= 6 ? 'warning' : 'danger';
-                  return `
-                    <tr>
-                      <td>${e.cv_name}</td>
-                      <td>${e.jd_name}</td>
-                      <td>${e.jd_category ? `<span class="badge badge-info">${e.jd_category}</span>` : '-'}</td>
-                      <td>${e.jd_department ? `<span class="badge" style="background: #8b5cf6; color: white;">${e.jd_department}</span>` : '-'}</td>
-                      <td><span style="font-weight: 600; color: var(--${scoreColor}-color);">${e.score || '-'}/10</span></td>
-                      <td style="color: var(--gray-600);">${new Date(e.created_at).toLocaleDateString('en-US')}</td>
-                      <td class="text-right">
-                        <a href="/report.html?id=${e.id}" target="_blank" class="btn btn-outline" style="padding: 0.375rem 0.75rem;">
-                          <i class="bi bi-file-text"></i>
-                        </a>
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div id="tablePagination" class="e-gridpager"></div>
-        </div>
-      `;
-
-      updateTablePagination(total, pages);
-    }
-
-    function updateTablePagination(total, pages) {
-      const pagination = document.getElementById('tablePagination');
-      if (!pagination) return;
-
-      const start = total === 0 ? 0 : (currentTablePage - 1) * currentTableLimit + 1;
-      const end = Math.min(currentTablePage * currentTableLimit, total);
-
-      const pageSizeHTML = `
-        <div class="e-pagesize">
-          <span>Show</span>
-          <select id="tablePageSizeSelect" onchange="changeTablePageSize(this.value)">
-            <option value="10" ${currentTableLimit === 10 ? 'selected' : ''}>10</option>
-            <option value="20" ${currentTableLimit === 20 ? 'selected' : ''}>20</option>
-            <option value="50" ${currentTableLimit === 50 ? 'selected' : ''}>50</option>
-            <option value="100" ${currentTableLimit === 100 ? 'selected' : ''}>100</option>
-          </select>
-          <span>per page</span>
-        </div>
-      `;
-
-      const maxPageButtons = 7;
-      let startPage = Math.max(1, currentTablePage - Math.floor(maxPageButtons / 2));
-      let endPage = Math.min(pages, startPage + maxPageButtons - 1);
-
-      if (endPage - startPage < maxPageButtons - 1) {
-        startPage = Math.max(1, endPage - maxPageButtons + 1);
-      }
+      const paginationContainer = document.getElementById('paginationContainer');
+      paginationContainer.classList.remove('hidden');
 
       let pagesHTML = '';
+      const maxButtons = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+      let endPage = Math.min(pages, startPage + maxButtons - 1);
+
       for (let i = startPage; i <= endPage; i++) {
         pagesHTML += `
-          <button class="e-pagerbutton ${i === currentTablePage ? 'e-currentitem' : ''}"
-                  onclick="goToTablePage(${i})"
-                  ${i === currentTablePage ? 'disabled' : ''}>
-            ${i}
-          </button>
+          <button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>
         `;
       }
 
-      const pagerHTML = `
-        ${pageSizeHTML}
-        <div class="e-pagercontainer">
-          <div class="e-pagerinfo">
-            Showing <strong>${start}</strong> to <strong>${end}</strong> of <strong>${total}</strong>
-          </div>
-          <div class="e-pagernav">
-            <button class="e-pagerbutton" onclick="goToTablePage(1)" ${currentTablePage === 1 ? 'disabled' : ''} title="First">
-              <i class="bi bi-chevron-bar-left"></i>
-            </button>
-            <button class="e-pagerbutton" onclick="goToTablePage(${currentTablePage - 1})" ${currentTablePage === 1 ? 'disabled' : ''} title="Previous">
-              <i class="bi bi-chevron-left"></i>
-            </button>
-            ${pagesHTML}
-            <button class="e-pagerbutton" onclick="goToTablePage(${currentTablePage + 1})" ${currentTablePage === pages ? 'disabled' : ''} title="Next">
-              <i class="bi bi-chevron-right"></i>
-            </button>
-            <button class="e-pagerbutton" onclick="goToTablePage(${pages})" ${currentTablePage === pages ? 'disabled' : ''} title="Last">
-              <i class="bi bi-chevron-bar-right"></i>
-            </button>
-          </div>
+      paginationContainer.innerHTML = `
+        <div class="pagination-info">${start}-${end} of ${total}</div>
+        <div class="pagination-nav">
+          <button class="pagination-btn" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="bi bi-chevron-bar-left"></i>
+          </button>
+          <button class="pagination-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          ${pagesHTML}
+          <button class="pagination-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}>
+            <i class="bi bi-chevron-right"></i>
+          </button>
+          <button class="pagination-btn" onclick="goToPage(${pages})" ${currentPage === pages ? 'disabled' : ''}>
+            <i class="bi bi-chevron-bar-right"></i>
+          </button>
         </div>
       `;
-
-      pagination.innerHTML = pagerHTML;
     }
 
-    function goToTablePage(page) {
-      currentTablePage = page;
-      renderTableView();
-    }
-
-    function changeTablePageSize(size) {
-      currentTableLimit = parseInt(size);
-      currentTablePage = 1;
-      renderTableView();
+    function goToPage(page) {
+      currentPage = page;
+      renderList();
+      renderPagination();
     }
 
     document.getElementById('statsModal').addEventListener('click', (e) => {

@@ -35,7 +35,7 @@ class HuggingFaceProvider(AIProvider):
             print(f"HuggingFace test connection error: {e}")
             return False
 
-    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
+    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None, custom_prompt: str = None) -> Dict[str, Any]:
         """Evaluate using HuggingFace via OpenAI client"""
         api_key = self.config.get('api_key', '')
         model = self.config.get('model', 'deepseek-ai/DeepSeek-V3.2-Exp:novita')
@@ -52,6 +52,10 @@ class HuggingFaceProvider(AIProvider):
         if criteria and len(criteria) > 0:
             tags_str = "\n".join([f"- {t}" for t in criteria])
             criteria_text = f"\n🎯 KEY EVALUATION CRITERIA:\n{tags_str}\n\nPrioritize candidates who meet these requirements."
+        
+        # Add custom prompt if provided
+        if custom_prompt and custom_prompt.strip():
+            criteria_text += f"\n\n📝 ADDITIONAL REQUIREMENTS FROM RECRUITER:\n{custom_prompt.strip()}\n\nPlease carefully consider these additional requirements in your evaluation."
 
         prompt = f"""You are a SUPPORTIVE recruiter looking for POTENTIAL in candidates. Evaluate this CV holistically.
 

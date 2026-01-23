@@ -209,6 +209,8 @@ async def bulk_delete_jds(filenames: list[str]):
 @app.get("/cvs")
 def list_cvs(page: int = 1, limit: int = 10, search: str = "", db: Session = Depends(get_db)):
     """List CVs with pagination and search"""
+    from sqlalchemy import func
+    
     all_files = [p for p in CV_DIR.iterdir() if p.is_file() and p.suffix in ['.pdf', '.docx']]
 
     # Filter by search
@@ -224,10 +226,22 @@ def list_cvs(page: int = 1, limit: int = 10, search: str = "", db: Session = Dep
     end = start + limit
     files = all_files[start:end]
 
-    # Get metadata for each file
+    # Get metadata and evaluation stats for each file
     items = []
     for f in files:
         meta = db.query(CVMetadata).filter(CVMetadata.filename == f.name).first()
+        
+        # Get evaluation statistics from Evaluation table
+        eval_stats = db.query(
+            func.count(Evaluation.id).label('count'),
+            func.max(Evaluation.score).label('best_score'),
+            func.avg(Evaluation.score).label('avg_score')
+        ).filter(Evaluation.cv_name == f.name).first()
+        
+        evaluation_count = eval_stats.count if eval_stats else 0
+        best_score = eval_stats.best_score if eval_stats and eval_stats.best_score else None
+        avg_score = round(eval_stats.avg_score, 1) if eval_stats and eval_stats.avg_score else None
+        
         items.append({
             "name": f.name,
             "size": f.stat().st_size,
@@ -236,7 +250,10 @@ def list_cvs(page: int = 1, limit: int = 10, search: str = "", db: Session = Dep
             "category": meta.category if meta else None,
             "department": meta.department if meta else None,
             "email": meta.email if meta else None,
-            "phone": meta.phone if meta else None
+            "phone": meta.phone if meta else None,
+            "evaluation_count": evaluation_count,
+            "best_score": best_score,
+            "avg_score": avg_score
         })
 
     return {
@@ -310,6 +327,7 @@ async def bulk_delete_cvs(filenames: list[str]):
 class EvalRequest(BaseModel):
     jd_name: str
     cv_names: list[str]
+    custom_prompt: Optional[str] = None
 
 MAX_CVS_PER_EVALUATION = 3
 
@@ -343,6 +361,7 @@ async def evaluate(payload: EvalRequest):
             process_evaluation,
             payload.jd_name,
             payload.cv_names,
+            payload.custom_prompt,
             job_timeout=600  # 10 minutes timeout for large files
         )
         return {"task_id": job.id, "status": "queued"}

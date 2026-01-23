@@ -10,7 +10,7 @@ class AIProvider(ABC):
         self.config = config
     
     @abstractmethod
-    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None) -> Dict[str, Any]:
+    async def evaluate(self, jd_text: str, cv_text: str, criteria: list[str] = None, custom_prompt: str = None) -> Dict[str, Any]:
         """
         Evaluate CV against JD and return structured result.
         
