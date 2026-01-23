@@ -38,3 +38,4 @@ reports/*
 # Docker
 *.pid
 .history
+.DS_Store
