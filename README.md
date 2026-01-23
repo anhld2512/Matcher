@@ -15,6 +15,7 @@
 - ✅ Upload và quản lý CV (PDF, DOCX)
 - ✅ Upload và quản lý JD (DOCX)
 - ✅ Đánh giá tự động CV với JD bằng AI
+- ✅ Quick Evaluate: Đánh giá nhanh CV mà không cần JD
 - ✅ Hỗ trợ nhiều AI Provider: HuggingFace, Gemini, ChatGPT, DeepSeek
 - ✅ Thêm tiêu chí đánh giá tùy chỉnh cho từng JD
 - ✅ Xem lịch sử đánh giá
@@ -24,80 +25,56 @@
 
 ### Yêu cầu
 
-- Python 3.9+
-- Redis Server
-- pip
+- [Docker Engine](https://docs.docker.com/engine/install/) (Khuyến nghị cài đặt qua CLI, không bắt buộc Docker Desktop)
+- Docker Compose
 
-### Cách 1: Chạy nhanh (Khuyến nghị) 🚀
+### Hướng dẫn cài đặt & Chạy (Đơn giản nhất) 🚀
 
-#### macOS
-1. Double-click vào **`Matcher.app`** trong thư mục `matcher/`
-2. Ứng dụng sẽ tự động:
-   - Khởi động Docker (nếu chưa chạy)
-   - Khởi động Redis và các services
-   - Mở trình duyệt tại `http://localhost:8000`
-
-#### Windows
-1. Double-click vào **`start-windows.bat`** trong thư mục `matcher/`
-2. Ứng dụng sẽ tự động:
-   - Cài đặt Docker (nếu chưa có)
-   - Khởi động Docker và Redis
-   - Mở trình duyệt tại `http://localhost:8000`
-
-#### Dừng ứng dụng
-- **macOS**: Đóng cửa sổ Terminal hoặc nhấn `Ctrl+C`
-- **Windows**: Double-click vào `stop-windows.bat` hoặc đóng cửa sổ Command Prompt
-
----
-
-### Cách 2: Chạy bằng CLI (Cho developer)
+Chúng tôi khuyến nghị sử dụng Docker để chạy ứng dụng ổn định nhất trên mọi nền tảng (macOS, Linux, Windows w/ WSL2).
 
 #### Bước 1: Clone dự án
 
 ```bash
 git clone <repository-url>
-cd ListCV
+cd ListCV/matcher
 ```
 
-#### Bước 2: Cài đặt dependencies
+#### Bước 2: Chạy ứng dụng bằng Docker Compose
+
+Chỉ cần chạy lệnh sau, ứng dụng sẽ tự động tải các dependencies, thiết lập database và khởi động:
 
 ```bash
-cd matcher
-pip install -r requirements.txt
+docker-compose up -d --build
 ```
 
-#### Bước 3: Khởi động Redis
+Lệnh này sẽ khởi động 4 container:
+- `matcher-web`: Web server (FastAPI)
+- `matcher-worker`: Worker xử lý AI background
+- `matcher-redis`: Redis queue
+- `matcher-postgres`: Database
 
-```bash
-# macOS (với Homebrew)
-brew services start redis
-
-# Ubuntu/Debian
-sudo systemctl start redis
-
-# Windows (WSL)
-sudo service redis-server start
-```
-
-#### Bước 4: Chạy ứng dụng
-
-```bash
-# Terminal 1: Chạy server
-cd matcher
-uvicorn app.main:app --reload --port 8000
-
-# Terminal 2: Chạy worker xử lý queue
-cd matcher
-rq worker
-```
-
-#### Bước 5: Truy cập ứng dụng
+#### Bước 3: Truy cập ứng dụng
 
 Mở trình duyệt và truy cập: `http://localhost:8000`
 
+#### Các lệnh hữu ích khác
+
+- Xem log (để debug):
+  ```bash
+  docker-compose logs -f
+  ```
+- Dừng ứng dụng:
+  ```bash
+  docker-compose down
+  ```
+- Restart ứng dụng (khi code thay đổi):
+  ```bash
+  docker-compose restart
+  ```
+
 ---
 
-## 🔑 Hướng dẫn lấy API Key HuggingFace
+## 🔑 Hướng dẫn lấy API Key HuggingFace (Miễn phí)
 
 ### Bước 1: Đăng ký tài khoản
 
@@ -121,7 +98,7 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 1. Mở ứng dụng tại `http://localhost:8000`
 2. Click **AI Settings** ở sidebar
 3. Chọn Provider: **HuggingFace**
-4. Chọn Model: `deepseek-ai/DeepSeek-V3.2-Exp:novita` (khuyến nghị)
+4. Chọn Model: `deepseek-ai/DeepSeek-V3.2-Exp:novita` (khuyến nghị vì thông minh và miễn phí)
 5. Dán API Key vào ô
 6. Click **Test Connection** để kiểm tra
 7. Click **Save** để lưu
@@ -139,6 +116,7 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 - ✅ Upload and manage CVs (PDF, DOCX)
 - ✅ Upload and manage JDs (DOCX)
 - ✅ Automatic CV-JD evaluation using AI
+- ✅ Quick Evaluate: Instantly evaluate CV without a JD
 - ✅ Multiple AI Provider support: HuggingFace, Gemini, ChatGPT, DeepSeek
 - ✅ Add custom evaluation criteria for each JD
 - ✅ View evaluation history
@@ -148,80 +126,56 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 
 ### Requirements
 
-- Python 3.9+
-- Redis Server
-- pip
+- [Docker Engine](https://docs.docker.com/engine/install/) (CLI installation recommended, Docker Desktop not required)
+- Docker Compose
 
-### Method 1: Quick Start (Recommended) 🚀
+### Quick Start Guide 🚀
 
-#### macOS
-1. Double-click **`Matcher.app`** in the `matcher/` folder
-2. The app will automatically:
-   - Start Docker (if not running)
-   - Start Redis and all services
-   - Open your browser at `http://localhost:8000`
-
-#### Windows
-1. Double-click **`start-windows.bat`** in the `matcher/` folder
-2. The app will automatically:
-   - Install Docker (if not installed)
-   - Start Docker and Redis
-   - Open your browser at `http://localhost:8000`
-
-#### Stop the application
-- **macOS**: Close the Terminal window or press `Ctrl+C`
-- **Windows**: Double-click `stop-windows.bat` or close the Command Prompt window
-
----
-
-### Method 2: Run via CLI (For developers)
+We recommend using Docker to run the application for maximum stability across all platforms (macOS, Linux, Windows w/ WSL2).
 
 #### Step 1: Clone the project
 
 ```bash
 git clone <repository-url>
-cd ListCV
+cd ListCV/matcher
 ```
 
-#### Step 2: Install dependencies
+#### Step 2: Run with Docker Compose
+
+Simply run the following command. It will automatically install dependencies, setup the database, and start the app:
 
 ```bash
-cd matcher
-pip install -r requirements.txt
+docker-compose up -d --build
 ```
 
-#### Step 3: Start Redis
+This starts 4 containers:
+- `matcher-web`: Web server (FastAPI)
+- `matcher-worker`: Background AI worker
+- `matcher-redis`: Redis queue
+- `matcher-postgres`: Database
 
-```bash
-# macOS (with Homebrew)
-brew services start redis
-
-# Ubuntu/Debian
-sudo systemctl start redis
-
-# Windows (WSL)
-sudo service redis-server start
-```
-
-#### Step 4: Run the application
-
-```bash
-# Terminal 1: Run server
-cd matcher
-uvicorn app.main:app --reload --port 8000
-
-# Terminal 2: Run queue worker
-cd matcher
-rq worker
-```
-
-#### Step 5: Access the application
+#### Step 3: Access the application
 
 Open your browser and navigate to: `http://localhost:8000`
 
+#### Useful Commands
+
+- View logs (for debugging):
+  ```bash
+  docker-compose logs -f
+  ```
+- Stop application:
+  ```bash
+  docker-compose down
+  ```
+- Restart application (after code changes):
+  ```bash
+  docker-compose restart
+  ```
+
 ---
 
-## 🔑 How to Get HuggingFace API Key
+## 🔑 How to Get HuggingFace API Key (Free)
 
 ### Step 1: Create an account
 
@@ -245,7 +199,7 @@ Open your browser and navigate to: `http://localhost:8000`
 1. Open the app at `http://localhost:8000`
 2. Click **AI Settings** in the sidebar
 3. Select Provider: **HuggingFace**
-4. Select Model: `deepseek-ai/DeepSeek-V3.2-Exp:novita` (recommended)
+4. Select Model: `deepseek-ai/DeepSeek-V3.2-Exp:novita` (recommended for best free performance)
 5. Paste the API Key
 6. Click **Test Connection** to verify
 7. Click **Save** to save settings
@@ -266,7 +220,7 @@ ListCV/
 │   │   ├── index.html        # Main comparison page
 │   │   ├── jd-management.html
 │   │   ├── cv-management.html
-│   │   └── history.html
+│   │   ├── history.html
 │   ├── jd/                   # JD files storage
 │   ├── cv/                   # CV files storage
 │   └── reports/              # Generated reports
