@@ -29,24 +29,7 @@
   - **macOS / Windows**: Cài đặt **Docker Desktop** (Đã bao gồm Docker Engine & Compose)
   - **Linux**: Cài đặt **Docker Engine** + **Docker Compose Plugin**
 
-### Hướng dẫn cài đặt & Chạy 🚀
-
-Chúng tôi khuyến nghị sử dụng Docker để chạy ứng dụng ổn định nhất trên mọi nền tảng (macOS, Linux, Windows w/ WSL2).
-
-#### Bước 1: Clone dự án
-
-```bash
-git clone <repository-url>
-cd ListCV/matcher
-```
-
-#### Bước 2: Chạy ứng dụng bằng Docker Compose
-
-Chỉ cần chạy lệnh sau, ứng dụng sẽ tự động tải các dependencies, thiết lập database và khởi động:
-
-```bash
 docker-compose up -d --build
-```
 
 Lệnh này sẽ khởi động 4 container:
 - `matcher-web`: Web server (FastAPI)
