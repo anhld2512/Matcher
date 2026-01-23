@@ -25,20 +25,21 @@
 
 ### Yêu cầu
 
-- [Docker](https://docs.docker.com/get-docker/)
-  - **macOS / Windows**: Cài đặt **Docker Desktop** (Đã bao gồm Docker Engine & Compose)
-  - **Linux**: Cài đặt **Docker Engine** + **Docker Compose Plugin**
+- **macOS**: Không cần cài đặt trước! `Matcher.app` sẽ tự động cài **Homebrew** và **Docker** nếu chưa có.
+- **Windows**: Cài đặt [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
+- **Linux**: Cài đặt Docker Engine & Docker Compose
 
+### 🍎 Chạy nhanh (macOS) - Khuyên dùng
 
+1. Double-click vào file **`matcher/Matcher.app`**
+2. Ứng dụng sẽ tự động kiểm tra và cài đặt mọi thứ cần thiết (Homebrew, Docker).
+   - *Lưu ý: Nếu được hỏi mật khẩu, vui lòng nhập mật khẩu máy tính để cho phép cài đặt.*
+3. Chờ một chút, ứng dụng sẽ tự mở trình duyệt khi sẵn sàng!
 
-### 🍎 Chạy nhanh (macOS)
-
-Bạn có thể khởi động ứng dụng dễ dàng bằng cách double-click vào **`matcher/Matcher.app`**.
-*(Lần đầu chạy có thể cần cấp quyền hoặc chuột phải chọn Open)*
-
-### Chạy bằng Terminal
+### Chạy bằng Terminal (Windows / Linux)
 
 ```bash
+cd matcher
 docker-compose up -d --build
 ```
 
@@ -121,20 +122,20 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 
 ### Requirements
 
-- [Docker](https://docs.docker.com/get-docker/)
-  - **macOS / Windows**: Install **Docker Desktop** (Includes Docker Engine & Compose)
-  - **Linux**: Install **Docker Engine** + **Docker Compose Plugin**
+- **macOS**: No pre-installation needed! `Matcher.app` will automatically install **Homebrew** and **Docker** if missing.
+- **Windows**: Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)
+- **Linux**: Install Docker Engine & Docker Compose
 
+### 🍎 One-click Run (macOS) - Recommended
 
+1. Double-click on **`matcher/Matcher.app`**
+2. The app will automatically check and install missing dependencies (Homebrew, Docker).
+   - *Note: If asked, please enter your password to allow installation.*
+3. Wait a moment, the web interface will open automatically!
 
-### 🍎 One-click Run (macOS)
+### Manual Run (Windows / Linux)
 
-You can easily start the application by double-clicking on **`matcher/Matcher.app`**.
-*(On first run, you might need to right-click and select Open to grant permission)*
-
-### Quick Start Guide 🚀
-
-We recommend using Docker to run the application for maximum stability across all platforms (macOS, Linux, Windows w/ WSL2).
+We recommend using Docker to run the application anywhere.
 
 #### Step 1: Clone the project
 
@@ -144,8 +145,6 @@ cd ListCV/matcher
 ```
 
 #### Step 2: Run with Docker Compose
-
-Simply run the following command. It will automatically install dependencies, setup the database, and start the app:
 
 ```bash
 docker-compose up -d --build
