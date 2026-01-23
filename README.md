@@ -29,7 +29,18 @@
   - **macOS / Windows**: Cài đặt **Docker Desktop** (Đã bao gồm Docker Engine & Compose)
   - **Linux**: Cài đặt **Docker Engine** + **Docker Compose Plugin**
 
+
+
+### 🍎 Chạy nhanh (macOS)
+
+Bạn có thể khởi động ứng dụng dễ dàng bằng cách double-click vào **`matcher/Matcher.app`**.
+*(Lần đầu chạy có thể cần cấp quyền hoặc chuột phải chọn Open)*
+
+### Chạy bằng Terminal
+
+```bash
 docker-compose up -d --build
+```
 
 Lệnh này sẽ khởi động 4 container:
 - `matcher-web`: Web server (FastAPI)
@@ -113,6 +124,13 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 - [Docker](https://docs.docker.com/get-docker/)
   - **macOS / Windows**: Install **Docker Desktop** (Includes Docker Engine & Compose)
   - **Linux**: Install **Docker Engine** + **Docker Compose Plugin**
+
+
+
+### 🍎 One-click Run (macOS)
+
+You can easily start the application by double-clicking on **`matcher/Matcher.app`**.
+*(On first run, you might need to right-click and select Open to grant permission)*
 
 ### Quick Start Guide 🚀
 
