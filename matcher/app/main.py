@@ -926,7 +926,7 @@ async def quick_evaluate_cv(cv_name: str, payload: QuickEvaluateRequest, db: Ses
     # Build the prompt based on whether JD is provided
     if jd_text:
         # Evaluation with JD comparison
-        prompt = f"""You are a professional recruiter in VIETNAM. Evaluate the following CV against the JD and provide:
+        prompt = f"""You are a FAIR and BALANCED recruiter in VIETNAM. Evaluate this CV objectively against the JD.
 
 JOB DESCRIPTION:
 {jd_truncated}
@@ -937,68 +937,76 @@ JOB DESCRIPTION:
 CANDIDATE CV:
 {cv_truncated}
 
-Provide a detailed evaluation including:
-1. Brief summary of the candidate (2-3 sentences, focus on experience and key skills)
-2. Overall score (0-10) - Be STRICT, if not matching JD give low score (0-3)
+SCORING APPROACH - Be FAIR and BALANCED:
 
-3. Appropriate REALISTIC salary estimate in VND/month based on VIETNAM market for this SPECIFIC INDUSTRY:
-   - Identify the industry (Tech, Sales, Marketing, Admin, Assessment, etc.)
-   - Estimate salary based on standard rates for this role in Vietnam.
-   - REFERENCE ONLY (for Tech/Office):
-     * Junior: 8-15M | Mid: 15-30M | Senior: 30-50M | Lead: 40-70M
-   - ADJUST accordingly for other industries (e.g., Sales might have lower base + commission, Admin might be lower).
+📊 OVERALL SCORE (0-10) - Evaluate objectively:
+- 9-10: Excellent match - exceeds most requirements, strong candidate
+- 7-8: Good match - meets most requirements, minor gaps
+- 5-6: Partial match - has some relevant skills, noticeable gaps
+- 3-4: Weak match - limited relevant experience, significant gaps
+- 1-2: Poor match - mostly unrelated background
+- 0: Completely irrelevant
 
-4. Main strengths (3-5 points)
-5. Weaknesses or gaps compared to requirements
-6. Final recommendation (RECOMMEND/CONSIDER/REJECT)
+⚠️ EVALUATION RULES:
+1. START with 5/10 as baseline, then adjust based on match quality
+2. Add points for skills that match JD requirements
+3. Subtract points for missing critical requirements
+4. Consider both current skills AND growth potential
+5. Be fair - don't be too harsh or too lenient
 
-Return JSON with exact format:
+💰 SALARY ESTIMATION (Vietnam Market):
+- Identify the industry (Tech, Sales, Marketing, Admin, etc.)
+- TECH/OFFICE REFERENCE: Junior 8-15M | Mid 15-30M | Senior 30-50M | Lead 40-70M
+- ADJUST for other industries accordingly
+
+Return JSON only:
 {{
-  "summary": "Brief summary...",
-  "score": 8,
-  "salary_estimate": "15-20 million VND/month",
+  "summary": "<Brief summary of candidate, 2-3 sentences>",
+  "score": <0-10>,
+  "salary_estimate": "<realistic VND/month estimate>",
   "strengths": "- Strength 1\\n- Strength 2\\n- Strength 3",
-  "weaknesses": "- Weakness 1\\n- Weakness 2",
-  "recommendation": "RECOMMEND"
+  "weaknesses": "- Gap 1\\n- Gap 2",
+  "recommendation": "<RECOMMEND/CONSIDER/REJECT>"
 }}"""
     else:
         # Market-based evaluation without JD
-        prompt = f"""You are a professional recruiter and labor market analyst in VIETNAM. Evaluate this CV according to current Vietnamese recruitment market standards:
+        prompt = f"""You are a FAIR and BALANCED recruiter in VIETNAM. Evaluate this CV objectively based on market standards.
 
 {custom_text}
 
 CANDIDATE CV:
 {cv_truncated}
 
-Evaluate the candidate based on:
-1. **CV Quality**: Structure, content, presentation
-2. **Experience**: Years, positions, companies
-3. **Skills**: Technical skills, soft skills
-4. **Education**: Degrees, certifications
-5. **Market**: Compare with VIETNAM market average for similar positions
+SCORING APPROACH - Be FAIR and BALANCED:
 
-SALARY ESTIMATION GUIDELINES:
-- Identify the specific industry/field of the candidate.
-- Apply VIETNAM market standards for that industry.
-- TECH/OFFICE REFERENCE ONLY: Junior 8-15M | Mid 15-30M | Senior 30-50M | Lead 40-70M.
-- For other fields (Retail, Service, Manufacturing, etc.), adjust to realistic local standards.
+📊 OVERALL SCORE (0-10) - Evaluate objectively:
+- 9-10: Excellent - outstanding skills, high market competitiveness
+- 7-8: Good - solid skills for their level, good employability
+- 5-6: Average - has relevant experience, some limitations
+- 3-4: Below average - limited experience, needs development
+- 1-2: Weak - very limited or irrelevant background
+- 0: Incomplete/unusable CV
 
-Provide evaluation including:
-1. Brief summary of the candidate (2-3 sentences, clearly state most suitable position/field)
-2. Overall quality score of the candidate (0-10) compared to market
-3. REALISTIC salary estimate in VND/month for this SPECIFIC ROLE in VIETNAM
-4. Outstanding strengths of the candidate (3-5 points)
-5. Areas for improvement or limitations
-6. Market competitiveness assessment (EXCELLENT/GOOD/AVERAGE/BELOW_AVERAGE)
+⚠️ EVALUATION RULES:
+1. START with 5/10 as baseline, then adjust based on quality
+2. Add points for strong skills, experience, education
+3. Subtract points for significant gaps or weaknesses
+4. Consider both current abilities AND growth potential
+5. Be fair - don't be too harsh or too lenient
 
-Return JSON with exact format:
+💰 SALARY ESTIMATION (Vietnam Market):
+- Identify the industry (Tech, Sales, Marketing, Admin, etc.)
+- TECH/OFFICE REFERENCE: Junior 8-15M | Mid 15-30M | Senior 30-50M | Lead 40-70M
+- ADJUST for other industries accordingly
+
+Return JSON only:
 {{
-  "summary": "Brief summary of candidate and suitable position...",
-  "score": 7,
-  "salary_estimate": "15-20 million VND/month",
+  "summary": "<Brief summary of candidate and suitable position, 2-3 sentences>",
+  "score": <0-10>,
+  "salary_estimate": "<realistic VND/month estimate>",
   "strengths": "- Strength 1\\n- Strength 2\\n- Strength 3",
   "weaknesses": "- Area for improvement 1\\n- Area for improvement 2",
-  "recommendation": "GOOD"
+  "recommendation": "<EXCELLENT/GOOD/AVERAGE/BELOW_AVERAGE>"
 }}"""
     
     # Call AI provider using the evaluate method
