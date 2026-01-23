@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo    CV-JD Matcher - Stop Services
+echo    Matcher - Stop Services
 echo ========================================
 echo.
 

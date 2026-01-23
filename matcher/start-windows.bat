@@ -1,11 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
-title CV-JD Matcher
+title Matcher
 color 0A
 
 echo.
 echo  ╔══════════════════════════════════════════╗
-echo  ║     CV-JD Matcher - Auto Installer       ║
+echo  ║     Matcher - Auto Installer       ║
 echo  ╚══════════════════════════════════════════╝
 echo.
 

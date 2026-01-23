@@ -1,4 +1,4 @@
-# CV-JD Matcher
+# Matcher
 
 > 🇻🇳 [Tiếng Việt](#tiếng-việt) | 🇬🇧 [English](#english)
 
@@ -8,7 +8,7 @@
 
 ## Giới thiệu
 
-**CV-JD Matcher** là ứng dụng AI giúp đánh giá và so sánh CV ứng viên với mô tả công việc (Job Description). Ứng dụng sử dụng các mô hình AI tiên tiến để phân tích và cho điểm mức độ phù hợp.
+**Matcher** là ứng dụng AI giúp đánh giá và so sánh CV ứng viên với mô tả công việc (Job Description). Ứng dụng sử dụng các mô hình AI tiên tiến để phân tích và cho điểm mức độ phù hợp.
 
 ## Tính năng
 
@@ -28,21 +28,44 @@
 - Redis Server
 - pip
 
-### Bước 1: Clone dự án
+### Cách 1: Chạy nhanh (Khuyến nghị) 🚀
+
+#### macOS
+1. Đảm bảo Redis đã chạy:
+   ```bash
+   brew services start redis
+   ```
+2. Double-click vào **`Matcher.app`** trong thư mục `matcher/`
+3. Ứng dụng sẽ tự động mở trình duyệt tại `http://localhost:8000`
+
+#### Windows
+1. Đảm bảo Redis đã chạy
+2. Double-click vào **`start-windows.bat`** trong thư mục `matcher/`
+3. Mở trình duyệt và truy cập `http://localhost:8000`
+
+#### Dừng ứng dụng
+- **macOS**: Đóng cửa sổ Terminal hoặc nhấn `Ctrl+C`
+- **Windows**: Double-click vào `stop-windows.bat` hoặc đóng cửa sổ Command Prompt
+
+---
+
+### Cách 2: Chạy bằng CLI (Cho developer)
+
+#### Bước 1: Clone dự án
 
 ```bash
 git clone <repository-url>
 cd ListCV
 ```
 
-### Bước 2: Cài đặt dependencies
+#### Bước 2: Cài đặt dependencies
 
 ```bash
 cd matcher
 pip install -r requirements.txt
 ```
 
-### Bước 3: Khởi động Redis
+#### Bước 3: Khởi động Redis
 
 ```bash
 # macOS (với Homebrew)
@@ -55,7 +78,7 @@ sudo systemctl start redis
 sudo service redis-server start
 ```
 
-### Bước 4: Chạy ứng dụng
+#### Bước 4: Chạy ứng dụng
 
 ```bash
 # Terminal 1: Chạy server
@@ -67,7 +90,7 @@ cd matcher
 rq worker
 ```
 
-### Bước 5: Truy cập ứng dụng
+#### Bước 5: Truy cập ứng dụng
 
 Mở trình duyệt và truy cập: `http://localhost:8000`
 
@@ -108,7 +131,7 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 
 ## Introduction
 
-**CV-JD Matcher** is an AI-powered application that evaluates and compares candidate CVs with Job Descriptions. The application uses advanced AI models to analyze and score the compatibility level.
+**Matcher** is an AI-powered application that evaluates and compares candidate CVs with Job Descriptions. The application uses advanced AI models to analyze and score the compatibility level.
 
 ## Features
 
@@ -128,21 +151,44 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 - Redis Server
 - pip
 
-### Step 1: Clone the project
+### Method 1: Quick Start (Recommended) 🚀
+
+#### macOS
+1. Make sure Redis is running:
+   ```bash
+   brew services start redis
+   ```
+2. Double-click **`Matcher.app`** in the `matcher/` folder
+3. The app will automatically open your browser at `http://localhost:8000`
+
+#### Windows
+1. Make sure Redis is running
+2. Double-click **`start-windows.bat`** in the `matcher/` folder
+3. Open your browser and navigate to `http://localhost:8000`
+
+#### Stop the application
+- **macOS**: Close the Terminal window or press `Ctrl+C`
+- **Windows**: Double-click `stop-windows.bat` or close the Command Prompt window
+
+---
+
+### Method 2: Run via CLI (For developers)
+
+#### Step 1: Clone the project
 
 ```bash
 git clone <repository-url>
 cd ListCV
 ```
 
-### Step 2: Install dependencies
+#### Step 2: Install dependencies
 
 ```bash
 cd matcher
 pip install -r requirements.txt
 ```
 
-### Step 3: Start Redis
+#### Step 3: Start Redis
 
 ```bash
 # macOS (with Homebrew)
@@ -155,7 +201,7 @@ sudo systemctl start redis
 sudo service redis-server start
 ```
 
-### Step 4: Run the application
+#### Step 4: Run the application
 
 ```bash
 # Terminal 1: Run server
@@ -167,7 +213,7 @@ cd matcher
 rq worker
 ```
 
-### Step 5: Access the application
+#### Step 5: Access the application
 
 Open your browser and navigate to: `http://localhost:8000`
 
