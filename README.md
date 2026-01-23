@@ -25,10 +25,11 @@
 
 ### Yêu cầu
 
-- [Docker Engine](https://docs.docker.com/engine/install/) (Khuyến nghị cài đặt qua CLI, không bắt buộc Docker Desktop)
-- Docker Compose
+- [Docker](https://docs.docker.com/get-docker/)
+  - **macOS / Windows**: Cài đặt **Docker Desktop** (Đã bao gồm Docker Engine & Compose)
+  - **Linux**: Cài đặt **Docker Engine** + **Docker Compose Plugin**
 
-### Hướng dẫn cài đặt & Chạy (Đơn giản nhất) 🚀
+### Hướng dẫn cài đặt & Chạy 🚀
 
 Chúng tôi khuyến nghị sử dụng Docker để chạy ứng dụng ổn định nhất trên mọi nền tảng (macOS, Linux, Windows w/ WSL2).
 
@@ -126,8 +127,9 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 
 ### Requirements
 
-- [Docker Engine](https://docs.docker.com/engine/install/) (CLI installation recommended, Docker Desktop not required)
-- Docker Compose
+- [Docker](https://docs.docker.com/get-docker/)
+  - **macOS / Windows**: Install **Docker Desktop** (Includes Docker Engine & Compose)
+  - **Linux**: Install **Docker Engine** + **Docker Compose Plugin**
 
 ### Quick Start Guide 🚀
 
