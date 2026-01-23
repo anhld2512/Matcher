@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional  # Added imports
 import shutil
 import redis
+import requests
 
 from .schemas import JDCreate, JDUpdate, CVCreate, CVUpdate
 from .utils import save_uploaded_file, extract_text
@@ -845,3 +846,322 @@ def get_departments(db: Session = Depends(get_db)):
     ).all()
     
     return {"departments": [d[0] for d in departments if d[0]]}
+
+# ---------- Quick CV Evaluation Endpoint ----------
+class QuickEvaluateRequest(BaseModel):
+    jd_name: Optional[str] = None
+    custom_prompt: Optional[str] = None
+
+@app.post("/cvs/{cv_name}/quick-evaluate")
+async def quick_evaluate_cv(cv_name: str, payload: QuickEvaluateRequest, db: Session = Depends(get_db)):
+    """Quick evaluation of a CV with optional JD comparison - saves to database"""
+    from datetime import datetime
+    import json
+    
+    # Check CV exists
+    cv_path = CV_DIR / cv_name
+    if not cv_path.exists():
+        raise HTTPException(status_code=404, detail=f"CV '{cv_name}' not found")
+    
+    # Extract CV text
+    try:
+        cv_text = extract_text(str(cv_path))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to extract CV text: {str(e)}")
+    
+    # Extract JD text if provided
+    jd_text = ""
+    jd_criteria = []
+    jd_category = None
+    jd_department = None
+    
+    if payload.jd_name:
+        jd_path = JD_DIR / payload.jd_name
+        if not jd_path.exists():
+            raise HTTPException(status_code=404, detail=f"JD '{payload.jd_name}' not found")
+        try:
+            jd_text = extract_text(str(jd_path))
+            # Get JD metadata
+            from .database import JDMetadata
+            jd_meta = db.query(JDMetadata).filter(JDMetadata.filename == payload.jd_name).first()
+            if jd_meta:
+                if jd_meta.tags:
+                    jd_criteria = jd_meta.tags
+                jd_category = jd_meta.category
+                jd_department = jd_meta.department
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to extract JD text: {str(e)}")
+    
+    # Get AI provider settings
+    ai_settings = db.query(AISettings).filter(AISettings.is_active == 1).first()
+    if not ai_settings:
+        raise HTTPException(status_code=503, detail="No AI provider configured")
+    
+    # Build AI config
+    config = {"model": ai_settings.model_name}
+    if ai_settings.provider in ["gemini", "chatgpt", "deepseek", "huggingface"]:
+        config["api_key"] = ai_settings.api_key or ""
+    
+    # Get provider instance
+    try:
+        provider = get_ai_provider(ai_settings.provider, config)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize AI provider: {str(e)}")
+    
+    # Build prompt for quick evaluation
+    cv_truncated = cv_text[:8000] if len(cv_text) > 8000 else cv_text
+    jd_truncated = jd_text[:4000] if len(jd_text) > 4000 else jd_text if jd_text else ""
+    
+    # Build criteria text
+    criteria_text = ""
+    if jd_criteria:
+        tags_str = "\n".join([f"- {t}" for t in jd_criteria])
+        criteria_text = f"\nKEY CRITERIA / TAGS:\n{tags_str}\n"
+    
+    # Add custom prompt if provided
+    custom_text = ""
+    if payload.custom_prompt and payload.custom_prompt.strip():
+        custom_text = f"\n\nADDITIONAL REQUIREMENTS:\n{payload.custom_prompt.strip()}\n"
+    
+    # Build the prompt based on whether JD is provided
+    if jd_text:
+        # Evaluation with JD comparison
+        prompt = f"""You are a professional recruiter in VIETNAM. Evaluate the following CV against the JD and provide:
+
+JOB DESCRIPTION:
+{jd_truncated}
+
+{criteria_text}
+{custom_text}
+
+CANDIDATE CV:
+{cv_truncated}
+
+Provide a detailed evaluation including:
+1. Brief summary of the candidate (2-3 sentences, focus on experience and key skills)
+2. Overall score (0-10) - Be STRICT, if not matching JD give low score (0-3)
+
+3. Appropriate REALISTIC salary estimate in VND/month based on VIETNAM market for this SPECIFIC INDUSTRY:
+   - Identify the industry (Tech, Sales, Marketing, Admin, Assessment, etc.)
+   - Estimate salary based on standard rates for this role in Vietnam.
+   - REFERENCE ONLY (for Tech/Office):
+     * Junior: 8-15M | Mid: 15-30M | Senior: 30-50M | Lead: 40-70M
+   - ADJUST accordingly for other industries (e.g., Sales might have lower base + commission, Admin might be lower).
+
+4. Main strengths (3-5 points)
+5. Weaknesses or gaps compared to requirements
+6. Final recommendation (RECOMMEND/CONSIDER/REJECT)
+
+Return JSON with exact format:
+{{
+  "summary": "Brief summary...",
+  "score": 8,
+  "salary_estimate": "15-20 million VND/month",
+  "strengths": "- Strength 1\\n- Strength 2\\n- Strength 3",
+  "weaknesses": "- Weakness 1\\n- Weakness 2",
+  "recommendation": "RECOMMEND"
+}}"""
+    else:
+        # Market-based evaluation without JD
+        prompt = f"""You are a professional recruiter and labor market analyst in VIETNAM. Evaluate this CV according to current Vietnamese recruitment market standards:
+
+{custom_text}
+
+CANDIDATE CV:
+{cv_truncated}
+
+Evaluate the candidate based on:
+1. **CV Quality**: Structure, content, presentation
+2. **Experience**: Years, positions, companies
+3. **Skills**: Technical skills, soft skills
+4. **Education**: Degrees, certifications
+5. **Market**: Compare with VIETNAM market average for similar positions
+
+SALARY ESTIMATION GUIDELINES:
+- Identify the specific industry/field of the candidate.
+- Apply VIETNAM market standards for that industry.
+- TECH/OFFICE REFERENCE ONLY: Junior 8-15M | Mid 15-30M | Senior 30-50M | Lead 40-70M.
+- For other fields (Retail, Service, Manufacturing, etc.), adjust to realistic local standards.
+
+Provide evaluation including:
+1. Brief summary of the candidate (2-3 sentences, clearly state most suitable position/field)
+2. Overall quality score of the candidate (0-10) compared to market
+3. REALISTIC salary estimate in VND/month for this SPECIFIC ROLE in VIETNAM
+4. Outstanding strengths of the candidate (3-5 points)
+5. Areas for improvement or limitations
+6. Market competitiveness assessment (EXCELLENT/GOOD/AVERAGE/BELOW_AVERAGE)
+
+Return JSON with exact format:
+{{
+  "summary": "Brief summary of candidate and suitable position...",
+  "score": 7,
+  "salary_estimate": "15-20 million VND/month",
+  "strengths": "- Strength 1\\n- Strength 2\\n- Strength 3",
+  "weaknesses": "- Area for improvement 1\\n- Area for improvement 2",
+  "recommendation": "GOOD"
+}}"""
+    
+    # Call AI provider using the evaluate method
+    try:
+        # Direct API call with our custom prompt
+        if ai_settings.provider == "gemini":
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{config['model']}:generateContent?key={config['api_key']}"
+            
+            response = requests.post(
+                url,
+                json={
+                    "contents": [{
+                        "parts": [{
+                            "text": prompt
+                        }]
+                    }],
+                    "generationConfig": {
+                        "temperature": 0.3,
+                        "maxOutputTokens": 1500
+                    }
+                },
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                api_result = response.json()
+                try:
+                    text = api_result['candidates'][0]['content']['parts'][0]['text']
+                    # Parse JSON from response
+                    start = text.find('{')
+                    end = text.rfind('}') + 1
+                    if start != -1 and end > start:
+                        evaluation_result = json.loads(text[start:end])
+                    else:
+                        raise ValueError("No JSON found in response")
+                except (KeyError, IndexError, json.JSONDecodeError, ValueError) as e:
+                    raise HTTPException(status_code=500, detail=f"Invalid AI response format: {str(e)}")
+            else:
+                raise HTTPException(status_code=500, detail=f"AI API error: {response.status_code}")
+                
+        elif ai_settings.provider == "huggingface":
+            # Use OpenAI-compatible client for HuggingFace
+            from openai import OpenAI
+            
+            client = OpenAI(
+                base_url="https://router.huggingface.co/v1",
+                api_key=config['api_key']
+            )
+            
+            completion = client.chat.completions.create(
+                model=config['model'],
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=1500
+            )
+            
+            content = completion.choices[0].message.content
+            # Parse JSON from response
+            start = content.find('{')
+            end = content.rfind('}') + 1
+            if start != -1 and end > start:
+                evaluation_result = json.loads(content[start:end])
+            else:
+                raise ValueError("No JSON found in HuggingFace response")
+                
+        elif ai_settings.provider == "chatgpt":
+            # Use OpenAI client for ChatGPT
+            from openai import OpenAI
+            
+            client = OpenAI(api_key=config['api_key'])
+            
+            completion = client.chat.completions.create(
+                model=config['model'],
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=1500
+            )
+            
+            content = completion.choices[0].message.content
+            # Parse JSON from response
+            start = content.find('{')
+            end = content.rfind('}') + 1
+            if start != -1 and end > start:
+                evaluation_result = json.loads(content[start:end])
+            else:
+                raise ValueError("No JSON found in ChatGPT response")
+                
+        elif ai_settings.provider == "deepseek":
+            # Use OpenAI-compatible client for DeepSeek
+            from openai import OpenAI
+            
+            client = OpenAI(
+                base_url="https://api.deepseek.com",
+                api_key=config['api_key']
+            )
+            
+            completion = client.chat.completions.create(
+                model=config['model'],
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=1500
+            )
+            
+            content = completion.choices[0].message.content
+            # Parse JSON from response
+            start = content.find('{')
+            end = content.rfind('}') + 1
+            if start != -1 and end > start:
+                evaluation_result = json.loads(content[start:end])
+            else:
+                raise ValueError("No JSON found in DeepSeek response")
+        else:
+            raise HTTPException(status_code=501, detail=f"Quick evaluate not yet implemented for {ai_settings.provider}")
+        
+        # Extract evaluation data
+        summary = evaluation_result.get("summary", "")
+        score = evaluation_result.get("score", 5)
+        salary_estimate = evaluation_result.get("salary_estimate", "N/A")
+        strengths = evaluation_result.get("strengths", "")
+        weaknesses = evaluation_result.get("weaknesses", "")
+        recommendation = evaluation_result.get("recommendation", "CONSIDER")
+        
+        # Save to database as an Evaluation record
+        evaluation = Evaluation(
+            jd_name=payload.jd_name if payload.jd_name else "Quick Evaluation (No JD)",
+            cv_name=cv_name,
+            score=float(score),
+            status="completed",
+            report_file=None,  # Quick evals don't generate PDF reports
+            task_id=f"quick_eval_{cv_name}_{datetime.utcnow().timestamp()}",
+            created_at=datetime.utcnow(),
+            completed_at=datetime.utcnow(),
+            details={
+                "type": "quick_evaluation",
+                "summary": summary,
+                "salary_estimate": salary_estimate,
+                "strengths": strengths,
+                "weaknesses": weaknesses,
+                "recommendation": recommendation,
+                "custom_prompt": payload.custom_prompt,
+                "evaluation_mode": "jd_comparison" if payload.jd_name else "market_based"
+            },
+            jd_category=jd_category,
+            jd_department=jd_department
+        )
+        db.add(evaluation)
+        db.commit()
+        db.refresh(evaluation)
+        
+        return {
+            "evaluation_id": evaluation.id,
+            "cv_name": cv_name,
+            "jd_name": payload.jd_name,
+            "summary": summary,
+            "score": score,
+            "salary_estimate": salary_estimate,
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "recommendation": recommendation,
+            "created_at": evaluation.created_at.isoformat()
+        }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")

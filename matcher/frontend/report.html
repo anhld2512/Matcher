@@ -396,36 +396,55 @@
       document.getElementById('loadingCard').classList.add('hidden');
       document.getElementById('reportCard').classList.remove('hidden');
 
-      const details = data.details;
-      const scoreClass = details.score >= 8 ? 'high' : details.score >= 6 ? 'medium' : 'low';
+      // Handle both regular and quick evaluations
+      const details = data.details || {};
+      const isQuickEval = details.type === 'quick_evaluation';
+      
+      // Get score from either location
+      const score = data.score || details.score || 0;
+      const scoreClass = score >= 8 ? 'high' : score >= 6 ? 'medium' : 'low';
 
-      document.getElementById('reportTitle').textContent = details.cv_name;
+      // Get recommendation
+      let recommendation = details.recommendation || 'N/A';
+      
+      // Map recommendations to colors
+      const recColorMap = {
+        'RECOMMEND': '#16a34a', 'HIRE': '#16a34a', 'EXCELLENT': '#16a34a', 'GOOD': '#16a34a',
+        'CONSIDER': '#ca8a04', 'AVERAGE': '#ca8a04',
+        'REJECT': '#dc2626', 'BELOW_AVERAGE': '#dc2626'
+      };
+
+      document.getElementById('reportTitle').textContent = data.cv_name || 'N/A';
       const scoreEl = document.getElementById('reportScore');
-      scoreEl.textContent = `${details.score}/10`;
+      scoreEl.textContent = `${score}/10`;
       scoreEl.className = `report-score ${scoreClass}`;
 
-      document.getElementById('cvName').textContent = details.cv_name;
-      document.getElementById('jdName').textContent = details.jd_name;
-      document.getElementById('generatedAt').textContent = details.generated_at || 'N/A';
+      document.getElementById('cvName').textContent = data.cv_name || 'N/A';
+      document.getElementById('jdName').textContent = data.jd_name || 'N/A';
+      document.getElementById('generatedAt').textContent = data.created_at ? new Date(data.created_at).toLocaleString('vi-VN') : 'N/A';
 
       const recEl = document.getElementById('recommendation');
-      recEl.textContent = details.recommendation;
-      recEl.style.color = (details.recommendation === 'HIRE' || details.recommendation === 'RECOMMEND') ? '#16a34a' : 
-                          details.recommendation === 'CONSIDER' ? '#ca8a04' : '#dc2626';
+      recEl.textContent = recommendation;
+      recEl.style.color = recColorMap[recommendation] || '#6b7280';
 
-      // Summary
-      document.getElementById('executiveSummary').textContent = 
-        `Score: ${details.score}/10. Recommendation: ${details.recommendation}. ` +
-        (details.score >= 8 ? 'Strong candidate, well-suited for the position.' :
-         details.score >= 6 ? 'Good potential, requires further evaluation.' :
-         'Does not meet requirements for this role.');
+      // Summary - use actual summary for quick evals
+      if (isQuickEval && details.summary) {
+        document.getElementById('executiveSummary').textContent = details.summary;
+      } else {
+        document.getElementById('executiveSummary').textContent = 
+          `Score: ${score}/10. Recommendation: ${recommendation}. ` +
+          (score >= 8 ? 'Strong candidate, well-suited for the position.' :
+           score >= 6 ? 'Good potential, requires further evaluation.' :
+           'Does not meet requirements for this role.');
+      }
 
-      // Score Breakdown
+      // Score Breakdown - estimate from overall score
       const categories = [
-        { name: 'Technical', score: details.score >= 7 ? 8 : details.score >= 5 ? 6 : 4, color: '#3b82f6' },
-        { name: 'Experience', score: details.score >= 7 ? 7 : details.score >= 5 ? 5 : 3, color: '#8b5cf6' },
-        { name: 'Culture Fit', score: details.score >= 7 ? 8 : details.score >= 5 ? 6 : 5, color: '#10b981' }
+        { name: 'Technical', score: score >= 7 ? Math.min(score + 1, 10) : score >= 5 ? score : Math.max(score - 1, 0), color: '#3b82f6' },
+        { name: 'Experience', score: score >= 7 ? score : score >= 5 ? Math.max(score - 1, 0) : Math.max(score - 2, 0), color: '#8b5cf6' },
+        { name: 'Culture Fit', score: score >= 7 ? Math.min(score + 1, 10) : score, color: '#10b981' }
       ];
+      
       document.getElementById('scoreBreakdown').innerHTML = categories.map(cat => `
         <div class="score-bar-item">
           <div class="score-bar-label">${cat.name}</div>
@@ -438,7 +457,13 @@
 
       document.getElementById('strengths').textContent = details.strengths || 'No data';
       document.getElementById('weaknesses').textContent = details.weaknesses || 'No data';
-      document.getElementById('justification').textContent = details.justification || 'No data';
+      
+      // Justification - show salary estimate for quick evals
+      if (isQuickEval && details.salary_estimate) {
+        document.getElementById('justification').textContent = `Salary Estimate: ${details.salary_estimate}`;
+      } else {
+        document.getElementById('justification').textContent = details.justification || 'No data';
+      }
 
       // Decision Support
       const hiringReasons = [];
@@ -449,7 +474,8 @@
           hiringReasons.push(s.replace(/^[-•*]\s*/, ''));
         });
       }
-      if (details.score >= 8) hiringReasons.push('High evaluation score');
+      if (score >= 8) hiringReasons.push('High evaluation score');
+      if (isQuickEval && details.salary_estimate) hiringReasons.push(`Salary: ${details.salary_estimate}`);
       if (hiringReasons.length === 0) hiringReasons.push('Shows potential for growth');
 
       if (details.weaknesses && details.weaknesses !== 'N/A') {
@@ -457,7 +483,7 @@
           concerns.push(s.replace(/^[-•*]\s*/, ''));
         });
       }
-      if (details.score < 6) concerns.push('Below expected requirements');
+      if (score < 6) concerns.push('Below expected requirements');
       if (concerns.length === 0) concerns.push('No major concerns identified');
 
       document.getElementById('hiringReasons').innerHTML = hiringReasons.map(r => `<li>${r}</li>`).join('');

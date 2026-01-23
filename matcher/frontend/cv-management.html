@@ -391,6 +391,82 @@
     </div>
   </div>
 
+  <!-- Quick Evaluate Modal -->
+  <div id="quickEvaluateModal" class="modal">
+    <div class="modal-content" style="max-width: 650px; display: flex; flex-direction: column; max-height: 90vh;">
+      <div style="padding: 1.25rem; border-bottom: 1px solid var(--gray-200);">
+        <h3 style="margin: 0; font-size: 1rem; font-weight: 600;">
+          <i class="bi bi-lightning-charge-fill" style="color: #7c3aed;"></i>
+          Quick Evaluate: <span id="quickEvalCVName"></span>
+        </h3>
+      </div>
+      <div style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+        <!-- Input Section -->
+        <div id="quickEvalInput">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.375rem;">Compare with Position (optional)</label>
+            <select id="quickEvalJD" class="form-control" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 6px;">
+              <option value="">-- No JD Selected --</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <details open style="cursor: pointer;">
+              <summary style="font-size: 0.75rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.375rem;">Custom Prompt (optional)</summary>
+              <textarea id="quickEvalPrompt" class="form-control" rows="3" placeholder="Enter additional evaluation requirements..." style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 6px; margin-top: 0.5rem;"></textarea>
+            </details>
+          </div>
+        </div>
+        <!-- Loading Section -->
+        <div id="quickEvalLoading" class="hidden text-center" style="padding: 2rem;">
+          <div style="width: 2rem; height: 2rem; border: 3px solid var(--gray-200); border-top-color: #7c3aed; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
+          <p style="color: var(--gray-500);">Evaluating...</p>
+        </div>
+        <!-- Result Section -->
+        <div id="quickEvalResult" class="hidden">
+          <div style="background: var(--gray-50); padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+            <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: var(--gray-500); margin-bottom: 0.5rem;">Summary</div>
+            <p id="quickEvalSummary" style="margin: 0; font-size: 0.875rem; line-height: 1.5;"></p>
+            <div style="margin-top: 0.5rem; font-size: 0.6875rem; color: var(--gray-400);">
+              <span>ID: <span id="quickEvalId"></span></span> • 
+              <span id="quickEvalTime"></span>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="background: var(--gray-50); padding: 1rem; border-radius: 6px; text-align: center;">
+              <div style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem;" id="quickEvalScore">-</div>
+              <div style="font-size: 0.6875rem; color: var(--gray-500); text-transform: uppercase;">Score</div>
+            </div>
+            <div style="background: var(--gray-50); padding: 1rem; border-radius: 6px; text-align: center;">
+              <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.25rem;" id="quickEvalSalary">-</div>
+              <div style="font-size: 0.6875rem; color: var(--gray-500); text-transform: uppercase;">Salary</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div>
+              <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: #16a34a; margin-bottom: 0.5rem;">✓ Strengths</div>
+              <div id="quickEvalStrengths" style="font-size: 0.8125rem; line-height: 1.6; white-space: pre-line;"></div>
+            </div>
+            <div>
+              <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: #dc2626; margin-bottom: 0.5rem;">✗ Weaknesses</div>
+              <div id="quickEvalWeaknesses" style="font-size: 0.8125rem; line-height: 1.6; white-space: pre-line;"></div>
+            </div>
+          </div>
+          <div style="background: var(--gray-50); padding: 1rem; border-radius: 6px; text-align: center;">
+            <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; color: var(--gray-500); margin-bottom: 0.5rem;">Recommendation</div>
+            <div id="quickEvalRecommendation" style="font-size: 0.875rem; font-weight: 600;"></div>
+          </div>
+        </div>
+        <div id="quickEvalError" class="hidden" style="padding: 1rem; background: #fee2e2; border-radius: 6px; color: #dc2626; font-size: 0.875rem;"></div>
+      </div>
+      <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--gray-200); display: flex; gap: 0.5rem; justify-content: flex-end; background: white;">
+        <button class="btn btn-outline" onclick="closeQuickEvaluate()">Close</button>
+        <button id="quickEvalBtn" class="btn btn-primary" onclick="runQuickEvaluate()" style="background: #7c3aed;">
+          <i class="bi bi-lightning-charge-fill"></i> Evaluate
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Analysis Modal -->
   <div id="analysisModal" class="modal">
     <div class="modal-content" style="max-width: 700px;">
@@ -570,6 +646,9 @@
               ${hasEval ? `<span class="score-badge ${scoreClass}">${cv.best_score}/10</span>` : '-'}
             </td>
             <td style="text-align: right; white-space: nowrap;">
+              <button class="action-btn" onclick="openQuickEvaluate('${cv.name}')" title="Quick Evaluate" style="color: #7c3aed;">
+                <i class="bi bi-lightning-charge-fill"></i>
+              </button>
               <button class="action-btn" onclick="openContactModal('${cv.name}', '${cv.category || ''}', '${cv.department || ''}', '${cv.email || ''}', '${cv.phone || ''}')" title="Edit Info">
                 <i class="bi bi-pencil"></i>
               </button>
@@ -708,6 +787,115 @@
       }
       closeUploadModal();
       loadCVs();
+    }
+
+    // Quick Evaluate Functions
+    let currentQuickEvalCV = '';
+
+    function openQuickEvaluate(cvName) {
+      currentQuickEvalCV = cvName;
+      document.getElementById('quickEvaluateModal').classList.add('active');
+      document.getElementById('quickEvalCVName').textContent = cvName;
+      document.getElementById('quickEvalInput').classList.remove('hidden');
+      document.getElementById('quickEvalResult').classList.add('hidden');
+      document.getElementById('quickEvalError').classList.add('hidden');
+      document.getElementById('quickEvalBtn').classList.remove('hidden'); // Show button on open
+      document.getElementById('quickEvalPrompt').value = '';
+      document.getElementById('quickEvalJD').value = '';
+      loadJDsForQuickEval();
+    }
+
+    function closeQuickEvaluate() {
+      document.getElementById('quickEvaluateModal').classList.remove('active');
+    }
+
+    async function loadJDsForQuickEval() {
+      try {
+        const res = await fetch('/jds?limit=1000');
+        const data = await res.json();
+        const select = document.getElementById('quickEvalJD');
+        select.innerHTML = '<option value="">-- Không chọn JD --</option>';
+        data.items.forEach(jd => {
+          const option = document.createElement('option');
+          option.value = jd.name;
+          option.textContent = jd.name;
+          select.appendChild(option);
+        });
+      } catch (e) {
+        console.error('Failed to load JDs:', e);
+      }
+    }
+
+    async function runQuickEvaluate() {
+      const jdName = document.getElementById('quickEvalJD').value;
+      const customPrompt = document.getElementById('quickEvalPrompt').value.trim();
+      
+      // Show loading
+      document.getElementById('quickEvalInput').classList.add('hidden');
+      document.getElementById('quickEvalLoading').classList.remove('hidden');
+      document.getElementById('quickEvalResult').classList.add('hidden');
+      document.getElementById('quickEvalError').classList.add('hidden');
+      document.getElementById('quickEvalBtn').disabled = true;
+
+      try {
+        const res = await fetch(`/cvs/${encodeURIComponent(currentQuickEvalCV)}/quick-evaluate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jd_name: jdName || null,
+            custom_prompt: customPrompt || null
+          })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.detail || 'Evaluation failed');
+        }
+
+        const result = await res.json();
+        
+        // Display results
+        document.getElementById('quickEvalSummary').textContent = result.summary;
+        document.getElementById('quickEvalId').textContent = result.evaluation_id;
+        
+        // Format timestamp
+        const evalTime = new Date(result.created_at);
+        document.getElementById('quickEvalTime').textContent = evalTime.toLocaleString('vi-VN');
+        
+        const score = result.score;
+        const scoreEl = document.getElementById('quickEvalScore');
+        scoreEl.textContent = score + '/10';
+        scoreEl.style.color = score >= 8 ? '#16a34a' : score >= 6 ? '#ca8a04' : '#dc2626';
+        
+        document.getElementById('quickEvalSalary').textContent = result.salary_estimate;
+        document.getElementById('quickEvalStrengths').textContent = result.strengths;
+        document.getElementById('quickEvalWeaknesses').textContent = result.weaknesses;
+        
+        const recEl = document.getElementById('quickEvalRecommendation');
+        recEl.textContent = result.recommendation;
+        // Color map for all recommendation types
+        const recColorMap = {
+          'RECOMMEND': '#16a34a', 'HIRE': '#16a34a', 'EXCELLENT': '#16a34a', 'GOOD': '#16a34a',
+          'CONSIDER': '#ca8a04', 'AVERAGE': '#ca8a04',
+          'REJECT': '#dc2626', 'BELOW_AVERAGE': '#dc2626'
+        };
+        recEl.style.color = recColorMap[result.recommendation] || '#6b7280';
+        
+        document.getElementById('quickEvalLoading').classList.add('hidden');
+        document.getElementById('quickEvalResult').classList.remove('hidden');
+        // Hide Evaluate button after showing results
+        document.getElementById('quickEvalBtn').classList.add('hidden');
+        // Refresh the table data to show updated evaluation count
+        loadCVs();
+        
+      } catch (e) {
+        document.getElementById('quickEvalLoading').classList.add('hidden');
+        document.getElementById('quickEvalError').classList.remove('hidden');
+        document.getElementById('quickEvalError').textContent = 'Error: ' + e.message;
+        document.getElementById('quickEvalInput').classList.remove('hidden');
+      } finally {
+        document.getElementById('quickEvalBtn').disabled = false;
+      }
     }
 
     loadCVs();
