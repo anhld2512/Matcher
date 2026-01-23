@@ -479,7 +479,7 @@
       }
 
       tbody.innerHTML = pageItems.map(jd => {
-        const criteria = jd.criteria || [];
+        const criteria = jd.tags || [];
         const displayCriteria = criteria.slice(0, 3);
         const moreCriteria = criteria.length > 3 ? criteria.length - 3 : 0;
         
@@ -583,7 +583,7 @@
       document.getElementById('criteriaModal').classList.add('active');
       document.getElementById('criteriaJDName').textContent = name;
       document.getElementById('editingCriteriaJD').value = name;
-      currentCriteria = [...(jd.criteria || [])];
+      currentCriteria = [...(jd.tags || [])];
       renderCriteria();
     }
 
@@ -619,7 +619,7 @@
     async function saveCriteria() {
       const name = document.getElementById('editingCriteriaJD').value;
       try {
-        await updateJD(name, 'criteria', currentCriteria);
+        await updateJD(name, 'tags', currentCriteria);
         closeCriteriaModal();
         loadJDs();
       } catch (e) {
