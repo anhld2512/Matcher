@@ -23,7 +23,7 @@ def test_imports():
         print("  ✅ Database imports OK")
 
         from app.ai_providers import (
-            OllamaProvider, GeminiProvider, ChatGPTProvider,
+            GeminiProvider, ChatGPTProvider,
             DeepSeekProvider, HuggingFaceProvider,
             get_ai_provider, load_active_provider_from_db
         )
@@ -73,7 +73,6 @@ def test_providers():
 
         # Test each provider
         providers = {
-            'ollama': {'host': 'localhost', 'port': 11434, 'model': 'llama2'},
             'gemini': {'api_key': 'test_key', 'model': 'gemini-1.5-flash'},
             'chatgpt': {'api_key': 'test_key', 'model': 'gpt-3.5-turbo'},
             'deepseek': {'api_key': 'test_key', 'model': 'deepseek-chat'},

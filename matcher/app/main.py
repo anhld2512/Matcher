@@ -500,10 +500,8 @@ def get_ai_settings(db: Session = Depends(get_db)):
     settings = db.query(AISettings).filter(AISettings.is_active == 1).first()
     if not settings:
         return {
-            "provider": "ollama",
-            "model_name": "llama2",
-            "host": "ollama",
-            "port": 11434,
+            "provider": "gemini",
+            "model_name": "gemini-1.5-flash",
             "configured": False
         }
     return {
@@ -532,8 +530,8 @@ def save_ai_settings(config: AISettingsCreate, db: Session = Depends(get_db)):
         provider=config.provider,
         model_name=config.model_name,
         api_key=config.api_key if config.api_key else None,
-        host=config.host if config.provider == "ollama" else None,
-        port=config.port if config.provider == "ollama" else None,
+        host=None,
+        port=None,
         is_active=1,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
@@ -555,33 +553,26 @@ def list_ai_providers():
     return {
         "providers": [
             {
-                "id": "ollama",
-                "name": "Ollama",
-                "description": "Local AI models via Ollama",
-                "requires_api_key": False,
-                "requires_host": True
+                "id": "gemini",
+                "name": "Google Gemini",
+                "description": "Google's Gemini AI models",
+                "requires_api_key": True,
+                "requires_host": False
             },
-            # {
-            #     "id": "gemini",
-            #     "name": "Google Gemini",
-            #     "description": "Google's Gemini AI models",
-            #     "requires_api_key": True,
-            #     "requires_host": False
-            # },
-            # {
-            #     "id": "chatgpt",
-            #     "name": "ChatGPT (OpenAI)",
-            #     "description": "OpenAI's GPT models",
-            #     "requires_api_key": True,
-            #     "requires_host": False
-            # },
-            # {
-            #     "id": "deepseek",
-            #     "name": "DeepSeek",
-            #     "description": "DeepSeek AI models",
-            #     "requires_api_key": True,
-            #     "requires_host": False
-            # },
+            {
+                "id": "chatgpt",
+                "name": "ChatGPT (OpenAI)",
+                "description": "OpenAI's GPT models",
+                "requires_api_key": True,
+                "requires_host": False
+            },
+            {
+                "id": "deepseek",
+                "name": "DeepSeek",
+                "description": "DeepSeek AI models",
+                "requires_api_key": True,
+                "requires_host": False
+            },
             {
                 "id": "huggingface",
                 "name": "HuggingFace",

@@ -26,26 +26,6 @@ def call_ai_provider(jd_text: str, cv_text: str, criteria: list[str] = None, cus
         try:
             # Load active AI provider from database
             provider = load_active_provider_from_db()
-            
-            # FORCE FIX FOR DOCKER:
-            # If provider is Ollama AND we are in Docker (host is usually 'ollama' or we can detect env),
-            # force host to 'ollama' to ensure internal networking works, overriding any user 'localhost' setting.
-            if provider.name == 'ollama':
-                # Check if we can resolve 'ollama' hostname
-                import socket
-                try:
-                    socket.gethostbyname('ollama')
-                    # If successful, we are likely in docker-compose and 'ollama' service exists
-                    provider.config['host'] = 'ollama'
-                    print("DEBUG: Forced Ollama host to 'ollama' for Docker networking")
-                except:
-                    # Fallback to host.docker.internal if ollama service not found
-                    try:
-                        socket.gethostbyname('host.docker.internal')
-                        provider.config['host'] = 'host.docker.internal'
-                        print("DEBUG: Forced Ollama host to 'host.docker.internal'")
-                    except:
-                        pass # Keep original config if neither works
 
             # Run async evaluate method
             loop = asyncio.new_event_loop()
@@ -91,7 +71,7 @@ def process_evaluation(jd_name: str, cv_names: list[str], custom_prompt: str = N
     """
     Background task to process the evaluation.
     1. Extract text from JD and CVs
-    2. Call Ollama for each CV
+    2. Call AI for each CV
     3. Generate and save reports
     4. Save results to PostgreSQL
     5. Return results

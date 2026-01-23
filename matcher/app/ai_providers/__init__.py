@@ -58,11 +58,7 @@ def load_active_provider_from_db():
             "model": settings.model_name
         }
 
-        if settings.provider == "ollama":
-            config["host"] = settings.host or "localhost"
-            config["port"] = settings.port or 11434
-        else:
-            config["api_key"] = settings.api_key or ""
+        config["api_key"] = settings.api_key or ""
 
         return get_ai_provider(settings.provider, config)
     finally:

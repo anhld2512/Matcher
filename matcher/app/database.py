@@ -70,11 +70,11 @@ class AISettings(Base):
     __tablename__ = "ai_settings"
     
     id = Column(Integer, primary_key=True)
-    provider = Column(String, nullable=False)  # ollama, gemini, chatgpt, deepseek, huggingface
+    provider = Column(String, nullable=False)  # gemini, chatgpt, deepseek, huggingface
     model_name = Column(String, nullable=False)
     api_key = Column(Text, nullable=True)  # Encrypted API key
-    host = Column(String, nullable=True)  # For Ollama
-    port = Column(Integer, nullable=True)  # For Ollama
+    host = Column(String, nullable=True)  # Legacy field, not used
+    port = Column(Integer, nullable=True)  # Legacy field, not used
     is_active = Column(Integer, default=1)  # Boolean: 1=active, 0=inactive
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

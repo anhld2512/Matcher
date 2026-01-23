@@ -225,41 +225,6 @@ function handleModelChange() {
 }
 
 function togglePullModel() {
-    document.getElementById('pullModelSection').classList.toggle('hidden');
-}
-
-async function pullOllamaModel() {
-    const modelName = document.getElementById('pullModelName').value.trim();
-    if (!modelName) return;
-    
-    const statusDiv = document.getElementById('pullStatus');
-    const btn = document.getElementById('startPullBtn');
-    
-    statusDiv.classList.remove('hidden');
-    btn.disabled = true;
-    
-    try {
-        const host = document.getElementById('aiHost').value;
-        const port = document.getElementById('aiPort').value;
-        
-        const res = await fetch(`/ai-models/pull?provider=ollama&model_name=${modelName}&host=${host}&port=${port}`, {
-            method: 'POST'
-        });
-        
-        if (!res.ok) throw new Error(await res.text());
-        
-        alert('Đã thêm model vào hàng đợi tải xuống! Bạn có thể đóng cửa sổ này, quá trình sẽ chạy ngầm.');
-        document.getElementById('pullModelName').value = '';
-        
-        // Refresh models after delay
-        setTimeout(() => loadModels('ollama'), 5000);
-        
-    } catch (e) {
-        alert('Lỗi: ' + e.message);
-    } finally {
-        statusDiv.classList.add('hidden');
-        btn.disabled = false;
-    }
 }
 
 async function saveAiSettings() {
@@ -375,7 +340,6 @@ window.testAiConnection = testAiConnection;
 window.loadModels = loadModels;
 window.handleProviderChange = handleProviderChange;
 window.togglePullModel = togglePullModel;
-window.pullOllamaModel = pullOllamaModel;
 
 // Enable API Key editing
 function enableApiKeyEdit() {
