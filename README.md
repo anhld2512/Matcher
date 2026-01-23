@@ -31,17 +31,18 @@
 ### Cách 1: Chạy nhanh (Khuyến nghị) 🚀
 
 #### macOS
-1. Đảm bảo Redis đã chạy:
-   ```bash
-   brew services start redis
-   ```
-2. Double-click vào **`Matcher.app`** trong thư mục `matcher/`
-3. Ứng dụng sẽ tự động mở trình duyệt tại `http://localhost:8000`
+1. Double-click vào **`Matcher.app`** trong thư mục `matcher/`
+2. Ứng dụng sẽ tự động:
+   - Khởi động Docker (nếu chưa chạy)
+   - Khởi động Redis và các services
+   - Mở trình duyệt tại `http://localhost:8000`
 
 #### Windows
-1. Đảm bảo Redis đã chạy
-2. Double-click vào **`start-windows.bat`** trong thư mục `matcher/`
-3. Mở trình duyệt và truy cập `http://localhost:8000`
+1. Double-click vào **`start-windows.bat`** trong thư mục `matcher/`
+2. Ứng dụng sẽ tự động:
+   - Cài đặt Docker (nếu chưa có)
+   - Khởi động Docker và Redis
+   - Mở trình duyệt tại `http://localhost:8000`
 
 #### Dừng ứng dụng
 - **macOS**: Đóng cửa sổ Terminal hoặc nhấn `Ctrl+C`
@@ -154,17 +155,18 @@ Mở trình duyệt và truy cập: `http://localhost:8000`
 ### Method 1: Quick Start (Recommended) 🚀
 
 #### macOS
-1. Make sure Redis is running:
-   ```bash
-   brew services start redis
-   ```
-2. Double-click **`Matcher.app`** in the `matcher/` folder
-3. The app will automatically open your browser at `http://localhost:8000`
+1. Double-click **`Matcher.app`** in the `matcher/` folder
+2. The app will automatically:
+   - Start Docker (if not running)
+   - Start Redis and all services
+   - Open your browser at `http://localhost:8000`
 
 #### Windows
-1. Make sure Redis is running
-2. Double-click **`start-windows.bat`** in the `matcher/` folder
-3. Open your browser and navigate to `http://localhost:8000`
+1. Double-click **`start-windows.bat`** in the `matcher/` folder
+2. The app will automatically:
+   - Install Docker (if not installed)
+   - Start Docker and Redis
+   - Open your browser at `http://localhost:8000`
 
 #### Stop the application
 - **macOS**: Close the Terminal window or press `Ctrl+C`
