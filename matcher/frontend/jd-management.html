@@ -335,10 +335,10 @@
       </div>
       <div style="padding: 1.5rem;">
         <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-          <input type="file" id="fileInput" accept=".pdf,.docx" multiple style="display: none;">
+          <input type="file" id="fileInput" accept=".docx" multiple style="display: none;">
           <i class="bi bi-cloud-arrow-up"></i>
           <p style="margin: 0;"><strong>Drop files here</strong> or click to browse</p>
-          <p style="font-size: 0.75rem; color: var(--gray-400); margin: 0.5rem 0 0;">.pdf, .docx</p>
+          <p style="font-size: 0.75rem; color: var(--gray-400); margin: 0.5rem 0 0;">.docx only</p>
         </div>
       </div>
       <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--gray-200); text-align: right;">
@@ -673,7 +673,7 @@
         const formData = new FormData();
         formData.append('file', file);
         try {
-          await fetch('/jds/upload', { method: 'POST', body: formData });
+          await fetch('/jds', { method: 'POST', body: formData });
         } catch (e) {}
       }
       closeUploadModal();
